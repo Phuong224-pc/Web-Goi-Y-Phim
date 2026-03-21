@@ -664,3 +664,45 @@ body {
         grid-template-columns: 1fr 1fr;
     }
 }
+/* Nâng cấp hiệu ứng Modal */
+.modal {
+    backdrop-filter: blur(8px); /* Làm mờ trang web phía sau cực xịn */
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+    box-shadow: 0 0 25px rgba(229, 9, 20, 0.4); /* Đổ bóng đỏ mờ theo thương hiệu */
+    border: 1px solid #333;
+}
+
+.auth-form input:focus {
+    border-color: #8bc34a;
+    outline: none;
+}
+
+.btn-social:hover {
+    background: #333 !important;
+    border-color: #8bc34a !important;
+    transition: 0.3s;
+}
+/* Nâng cấp hiệu ứng Modal */
+.modal {
+    backdrop-filter: blur(8px); /* Làm mờ trang web phía sau cực xịn */
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+    box-shadow: 0 0 25px rgba(229, 9, 20, 0.4); /* Đổ bóng đỏ mờ theo thương hiệu */
+    border: 1px solid #333;
+}
+
+.auth-form input:focus {
+    border-color: #8bc34a;
+    outline: none;
+}
+
+.btn-social:hover {
+    background: #333 !important;
+    border-color: #8bc34a !important;
+    transition: 0.3s;
+}

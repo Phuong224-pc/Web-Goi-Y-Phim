@@ -17,6 +17,8 @@
 
             <ul class="nav-menu">
                 <li class="active"><a href="#" onclick="fetchMovies('trending')">TRANG CHỦ</a></li>
+                <li><a href="#" onclick="fetchMoviesType('movie')">PHIM LẺ</a></li>
+                <li><a href="#" onclick="fetchMoviesType('tv')">PHIM BỘ</a></li>
 
                 <li class="dropdown">
                     <a href="#">THỂ LOẠI <span>▼</span></a>
@@ -124,16 +126,38 @@
     <div id="authModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="toggleAuth()">&times;</span>
+            
+            <div class="auth-header" style="text-align: center; margin-bottom: 20px;">
+                <div class="logo">MOVIE<span>PRO</span></div>
+                <h3 id="authTitle" style="margin-top:10px; font-size: 18px;">Chào mừng trở lại!</h3>
+            </div>
+
             <div class="auth-tabs">
                 <button id="loginTab" class="tab-btn active" onclick="switchTab('login')">ĐĂNG NHẬP</button>
                 <button id="registerTab" class="tab-btn" onclick="switchTab('register')">ĐĂNG KÝ</button>
             </div>
+
             <form id="authForm" class="auth-form">
-                <input type="text" placeholder="Email / Tên đăng nhập" required>
-                <input type="password" placeholder="Mật khẩu" required>
-                <div id="registerFields" style="display: none;"><input type="password" placeholder="Nhập lại"></div>
+                <input type="text" id="userEmail" placeholder="Email / Tên đăng nhập" required>
+                <input type="password" id="userPass" placeholder="Mật khẩu" required>
+                <div id="registerFields" style="display: none;">
+                    <input type="password" id="userConfirmPass" placeholder="Xác nhận mật khẩu">
+                </div>
                 <button type="submit" class="btn-submit">XÁC NHẬN</button>
             </form>
+
+            <div class="social-divider" style="text-align: center; margin: 20px 0; position: relative; border-bottom: 1px solid #333; line-height: 0.1em;">
+                <span style="background: #1a1a1a; padding: 0 10px; color: #888; font-size: 12px;">Hoặc đăng nhập bằng</span>
+            </div>
+
+            <div class="social-btns" style="display: flex; gap: 10px;">
+                <button class="btn-social" onclick="socialLogin('Google')" style="flex:1; display: flex; align-items:center; justify-content:center; gap:8px; padding:10px; border-radius:5px; border:1px solid #444; background:none; color:#fff; cursor:pointer;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg" style="width:15px;"> Google
+                </button>
+                <button class="btn-social" onclick="socialLogin('Facebook')" style="flex:1; display: flex; align-items:center; justify-content:center; gap:8px; padding:10px; border-radius:5px; border:1px solid #444; background:none; color:#fff; cursor:pointer;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" style="width:15px;"> Facebook
+                </button>
+            </div>
         </div>
     </div>
     
