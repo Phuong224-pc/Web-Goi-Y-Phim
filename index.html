@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoviePro - Premium Cinema API</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">MOVIE<span>PRO</span></div>
+
+            <ul class="nav-menu">
+                <li class="active"><a href="#" onclick="fetchMovies('trending')">TRANG CHỦ</a></li>
+
+                <li class="dropdown">
+                    <a href="#">THỂ LOẠI <span>▼</span></a>
+                    <div class="dropdown-content">
+                        <div class="dropdown-grid">
+                            <span onclick="fetchByGenre(28)">Hành Động</span>
+                            <span onclick="fetchByGenre(12)">Phiêu Lưu</span>
+                            <span onclick="fetchByGenre(16)">Hoạt Hình</span>
+                            <span onclick="fetchByGenre(35)">Hài Hước</span>
+                            <span onclick="fetchByGenre(18)">Chính Kịch</span>
+                            <span onclick="fetchByGenre(27)">Kinh Dị</span>
+                            <span onclick="fetchByGenre(10749)">Tình Cảm</span>
+                            <span onclick="fetchByGenre(878)">Viễn Tưởng</span>
+                        </div>
+                    </div>
+                </li>
+
+                <li class="dropdown">
+                    <a href="#">QUỐC GIA <span>▼</span></a>
+                    <div class="dropdown-content single-column">
+                        <span onclick="fetchByRegion('US')">Âu Mỹ</span>
+                        <span onclick="fetchByRegion('KR')">Hàn Quốc</span>
+                        <span onclick="fetchByRegion('CN')">Trung Quốc</span>
+                        <span onclick="fetchByRegion('JP')">Nhật Bản</span>
+                        <span onclick="fetchByRegion('VN')">Việt Nam</span>
+                    </div>
+                </li>
+
+                <li><a href="#" onclick="fetchMovies('now_playing')">PHIM RẠP</a></li>
+                <li><a href="#" onclick="fetchMovies('top_rated')">TOP PHIM</a></li>
+            </ul>
+
+            <div class="right-nav">
+                <div class="search-box">
+                    <input type="text" id="movieInput" placeholder="Tìm tên phim..." autocomplete="off">
+                    <button id="searchBtn" onclick="handleSearch()">🔍</button>
+                    <div id="searchSuggestions" class="suggestions-list"></div>
+                </div>
+                <button class="login-btn" onclick="toggleAuth()">ĐĂNG NHẬP</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-section">
+    <div class="container main-layout"> <div class="left-content">
+            <div class="main-banner" id="heroBanner">
+                <div class="banner-content">
+                    <span class="trend-label">🔥 ĐANG HOT</span>
+                    <h1 id="heroTitle">Đang cập nhật...</h1>
+                    <div class="banner-meta">
+                        <span class="rating" id="heroRating">⭐ 0.0</span>
+                        <span class="quality">4K Ultra HD</span>
+                    </div>
+                    <p class="description" id="heroDesc">Vui lòng chờ trong giây lát...</p>
+                    <div class="banner-btns">
+                        <button class="btn-play">▶ XEM PHIM</button>
+                        <button class="btn-trailer">TRAILER</button>
+                    </div>
+                </div>
+
+                <button class="slider-btn prev" onclick="changeBanner(-1)">&#10094;</button>
+                <button class="slider-btn next" onclick="changeBanner(1)">&#10095;</button>
+                <div class="slider-dots" id="bannerDots"></div>
+            </div>
+
+            <div class="recommend-section" style="margin-top: 30px;">
+                <div class="recommend-header">
+                    <div class="rec-title">ĐỀ CỬ <span>›</span></div>
+                    <div class="rec-tabs">
+                        <span class="tab active" onclick="fetchRecommended('today', this)">Xem nhiều hôm nay</span>
+                        <span class="tab" onclick="fetchRecommended('season', this)">Xem nhiều trong mùa</span>
+                        <span class="tab" onclick="fetchRecommended('favorite', this)">Yêu Thích</span>
+                        <span class="tab" onclick="fetchRecommended('month', this)">Tháng</span>
+                    </div>
+                </div>
+                <div id="recommendGrid" class="movie-grid">
+                    </div>
+            </div>
+        </div>
+
+        <aside class="home-sidebar">
+            <div class="side-widget">
+                <h3 class="widget-title">PHIM HOT TRONG TUẦN</h3>
+                <div id="hotWeekly" class="side-list"></div>
+            </div>
+            <div class="side-widget">
+                <h3 class="widget-title">MỚI CẬP NHẬT</h3>
+                <ul id="newUpdates" class="text-list"></ul>
+            </div>
+        </aside>
+
+    </div>
+</div>
+
+    <div class="container">
+        <div class="section-header">
+            <h2 id="categoryTitle">🎬 PHIM MỚI CẬP NHẬT</h2>
+        </div>
+
+        <div id="movieList" class="movie-grid">
+        </div>
+    </div>
+    
+
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="toggleAuth()">&times;</span>
+            <div class="auth-tabs">
+                <button id="loginTab" class="tab-btn active" onclick="switchTab('login')">ĐĂNG NHẬP</button>
+                <button id="registerTab" class="tab-btn" onclick="switchTab('register')">ĐĂNG KÝ</button>
+            </div>
+            <form id="authForm" class="auth-form">
+                <input type="text" placeholder="Email / Tên đăng nhập" required>
+                <input type="password" placeholder="Mật khẩu" required>
+                <div id="registerFields" style="display: none;"><input type="password" placeholder="Nhập lại"></div>
+                <button type="submit" class="btn-submit">XÁC NHẬN</button>
+            </form>
+        </div>
+    </div>
+    
+
+    <script src="script.js"></script>
+</body>
+
+</html>
