@@ -10,11 +10,24 @@ const suggestionsBox = document.getElementById('searchSuggestions');
 // ==========================================
 function toggleHomeUI(showHome) {
     const heroSection = document.querySelector('.hero-section');
-    // Nếu showHome là true -> hiện banner/sidebar. Nếu false -> ẩn hết.
+    // Tìm container chứa phần Sắp Chiếu (thẻ div bao quanh upcomingGrid)
+    const upcomingGrid = document.getElementById('upcomingGrid');
+    const upcomingSection = upcomingGrid ? upcomingGrid.closest('.container') : null;
+
     if (heroSection) {
         heroSection.style.display = showHome ? 'block' : 'none';
     }
-    // Luôn cuộn lên đầu trang mỗi khi chuyển mục để người dùng thấy nội dung mới
+
+    // Ẩn/Hiện luôn cả phần Sắp Chiếu và đường kẻ ngang trang trí
+    if (upcomingSection) {
+        upcomingSection.style.display = showHome ? 'block' : 'none';
+        // Ẩn luôn thẻ <hr> liền sau nó nếu có
+        const divider = upcomingSection.nextElementSibling;
+        if (divider && divider.tagName === 'HR') {
+            divider.style.display = showHome ? 'block' : 'none';
+        }
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -69,8 +82,7 @@ async function fetchMovies(type) {
 
 // Lấy phim theo loại (Phim Lẻ / Phim Bộ)
 async function fetchMoviesType(type) {
-    toggleHomeUI(false); // Ẩn hoàn toàn banner/sidebar
-
+    toggleHomeUI(false); 
     categoryTitle.innerText = (type === 'movie') ? "🎬 DANH SÁCH PHIM LẺ" : "📺 DANH SÁCH PHIM BỘ";
     const url = `https://api.themoviedb.org/3/discover/${type}?api_key=${API_KEY}&language=vi-VN&sort_by=popularity.desc&page=1`;
 
@@ -144,8 +156,16 @@ async function loadExtras() {
                 </div>`).join('');
 
             document.getElementById('newUpdates').innerHTML = bannerList.slice(5, 13).map(m => `
-                <li><a href="#" style="color:#ccc; text-decoration:none;">${m.title || m.name}</a><span style="color:#e50914; font-weight:bold; margin-left:10px;">HD</span></li>
-            `).join('');
+    <li class="new-update-item">
+        <div class="update-thumb">
+            <img src="${m.poster_path ? 'https://image.tmdb.org/t/p/w92' + m.poster_path : 'https://via.placeholder.com/92x138?text=No+Poster'}" alt="${m.title || m.name}">
+        </div>
+        <div class="update-info">
+            <a href="#" class="update-name-link">${m.title || m.name}</a>
+            <span class="update-hd-tag">HD</span>
+        </div>
+    </li>
+`).join('');
         }
     } catch (e) { console.log(e); }
 }
@@ -210,4 +230,74 @@ window.addEventListener('DOMContentLoaded', () => {
     fetchMovies('trending');
     loadExtras();
     fetchRecommended('today');
+    fetchUpcoming();
 });
+
+// ==========================================
+// 3.5. LOGIC SẮP CHIẾU & ĐẾM NGƯỢC (ĐÃ SỬA LỖI)
+// ==========================================
+let countdownInterval;
+
+function startCountdown() {
+    if (countdownInterval) clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+        const timers = document.querySelectorAll('.countdown-bar');
+        timers.forEach(timer => {
+            const releaseDate = new Date(timer.getAttribute('data-date')).getTime();
+            const now = new Date().getTime();
+            const distance = releaseDate - now;
+
+            if (distance < 0) {
+                timer.innerHTML = "ĐÃ CÔNG CHIẾU";
+                timer.style.background = "#4CAF50"; 
+            } else {
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                timer.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }
+        });
+    }, 1000);
+}
+
+async function fetchUpcoming() {
+    const grid = document.getElementById('upcomingGrid');
+    if (!grid) return;
+
+    // KIỂM TRA: Nếu không ở trang chủ thì thoát, không nạp dữ liệu vào grid ẩn
+    const heroSection = document.querySelector('.hero-section');
+    if (heroSection && heroSection.style.display === 'none') return;
+
+    try {
+        const res = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}&language=vi-VN&page=1`);
+        const data = await res.json();
+        const movies = data.results.filter(m => new Date(m.release_date) > new Date()).slice(0, 5);
+
+        grid.innerHTML = movies.map(m => {
+            const dateParts = m.release_date.split('-');
+            const yearMonth = `${dateParts[0]}-${dateParts[1]}`;
+            const day = dateParts[2];
+
+            return `
+                <div class="movie-card">
+                    <div class="poster-wrapper" style="position: relative; overflow: hidden; border-radius: 8px;">
+                        <span class="badge-score">★ ${m.vote_average.toFixed(1)}</span>
+                        <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" style="width:100%; display:block;">
+                        <div class="upcoming-date-overlay">
+                            <div class="year-month">${yearMonth}</div>
+                            <div class="day">${day}</div>
+                        </div>
+                        <div class="countdown-bar" data-date="${m.release_date}">Đang tính toán...</div>
+                    </div>
+                    <div class="movie-info">
+                        <div class="movie-title">${m.title}</div>
+                        <p style="font-size:10px; color:#666; margin-top:5px;">Lượt xem: ${Math.floor(m.popularity * 10).toLocaleString()}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        startCountdown(); 
+    } catch (e) { console.error("Lỗi Upcoming:", e); }
+
+}
