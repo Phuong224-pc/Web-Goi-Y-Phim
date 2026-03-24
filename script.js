@@ -301,3 +301,115 @@ async function fetchUpcoming() {
     } catch (e) { console.error("Lỗi Upcoming:", e); }
 
 }
+// ==========================================
+// 7. LOGIC CHI TIẾT PHIM & XEM PHIM (MỚI)
+// ==========================================
+
+// Hàm mở trang chi tiết khi click vào Movie Card
+async function openDetails(movieId) {
+    const detailsPage = document.getElementById('movieDetailsPage');
+    if (!detailsPage) return;
+
+    try {
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${API_KEY}&language=vi-VN&append_to_response=credits,recommendations`);
+        const m = await res.json();
+
+        // 1. Cập nhật Banner Chi tiết
+        const hero = detailsPage.querySelector('.details-hero');
+        hero.style.backgroundImage = `url('https://image.tmdb.org/t/p/original${m.backdrop_path}')`;
+
+        // 2. Cập nhật thông tin cơ bản
+        detailsPage.querySelector('.details-poster img').src = `https://image.tmdb.org/t/p/w500${m.poster_path}`;
+        detailsPage.querySelector('.details-info h1').innerText = m.title;
+        detailsPage.querySelector('.meta-row').innerHTML = `
+            <span>📅 ${m.release_date.split('-')[0]}</span>
+            <span>⭐ ${m.vote_average.toFixed(1)}</span>
+            <span>⏱️ ${m.runtime} phút</span>
+        `;
+        
+        // 3. Cập nhật thể loại
+        detailsPage.querySelector('.genre-tags').innerHTML = m.genres.map(g => `<span>${g.name}</span>`).join('');
+        
+        // 4. Cập nhật nội dung
+        detailsPage.querySelector('.overview-text').innerText = m.overview || "Nội dung đang được cập nhật...";
+
+        // 5. Cập nhật dàn diễn viên (Lấy 6 người đầu)
+        detailsPage.querySelector('.cast-grid').innerHTML = m.credits.cast.slice(0, 6).map(c => `
+            <div class="cast-item">
+                <img src="${c.profile_path ? 'https://image.tmdb.org/t/p/w185' + c.profile_path : 'https://via.placeholder.com/100x150'}">
+                <p>${c.name}</p>
+            </div>
+        `).join('');
+
+        // 6. Gán ID cho nút xem phim
+        const playBtn = detailsPage.querySelector('.btn-play-now');
+        if (playBtn) {
+            playBtn.onclick = () => playMovie(m.id, m.title);
+        }
+
+        // Hiển thị Overlay
+        detailsPage.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Chống cuộn trang chính khi đang xem chi tiết
+
+    } catch (e) { console.error("Lỗi lấy chi tiết:", e); }
+}
+
+// Hàm đóng trang chi tiết
+function closeDetails() {
+    const detailsPage = document.getElementById('movieDetailsPage');
+    detailsPage.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    // Dừng phim nếu đang phát khi đóng
+    const playerModal = document.getElementById('playerModal');
+    if (playerModal) playerModal.style.display = 'none';
+    document.getElementById('moviePlayer').src = '';
+}
+
+// Hàm xử lý phát phim với Multi-Server
+function playMovie(id, title) {
+    const playerModal = document.getElementById('playerModal');
+    const iframe = document.getElementById('moviePlayer');
+    const serverBtns = document.querySelectorAll('.btn-server');
+
+    playerModal.style.display = 'block';
+    
+    // Mặc định chạy Server 1 (Vidsrc.pro)
+    const servers = [
+        `https://vidsrc.pro/embed/movie/${id}`,
+        `https://vidsrc.me/embed/movie/${id}`,
+        `https://2embed.org/embed/movie/${id}`
+    ];
+
+    iframe.src = servers[0];
+
+    // Xử lý đổi Server khi click
+    serverBtns.forEach((btn, index) => {
+        btn.onclick = () => {
+            serverBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            iframe.src = servers[index];
+        };
+    });
+}
+
+// ==========================================
+// 8. CẬP NHẬT HÀM RENDER (THÊM SỰ KIỆN CLICK)
+// ==========================================
+
+// Ghi đè hàm render cũ của bạn để thêm thuộc tính onclick
+function render(movies, targetDiv = listDiv) {
+    if (!movies || movies.length === 0) {
+        targetDiv.innerHTML = "<p style='padding:50px; text-align:center;'>Dữ liệu đang trống...</p>";
+        return;
+    }
+    targetDiv.innerHTML = movies.map(m => `
+        <div class="movie-card" onclick="openDetails(${m.id})">
+            <span class="badge-score">★ ${m.vote_average ? m.vote_average.toFixed(1) : '0.0'}</span>
+            <span class="badge-quality">Vietsub HD</span>
+            <img src="${m.poster_path ? 'https://image.tmdb.org/t/p/w500' + m.poster_path : 'https://via.placeholder.com/500x750?text=No+Poster'}">
+            <div class="movie-info">
+                <div class="movie-title">${m.title || m.name}</div>
+            </div>
+        </div>
+    `).join('');
+}
