@@ -232,9 +232,8 @@ window.addEventListener('DOMContentLoaded', () => {
     fetchRecommended('today');
     fetchUpcoming();
 });
-
 // ==========================================
-// 3.5. LOGIC SẮP CHIẾU & ĐẾM NGƯỢC (ĐÃ SỬA LỖI)
+// 3.5. LOGIC SẮP CHIẾU & ĐẾM NGƯỢC (FIXED)
 // ==========================================
 let countdownInterval;
 
@@ -242,8 +241,17 @@ function startCountdown() {
     if (countdownInterval) clearInterval(countdownInterval);
     countdownInterval = setInterval(() => {
         const timers = document.querySelectorAll('.countdown-bar');
+        // Nếu không còn timer nào trên màn hình thì dừng interval để tiết kiệm tài nguyên
+        if (timers.length === 0) {
+            clearInterval(countdownInterval);
+            return;
+        }
+
         timers.forEach(timer => {
-            const releaseDate = new Date(timer.getAttribute('data-date')).getTime();
+            const releaseDateStr = timer.getAttribute('data-date');
+            if (!releaseDateStr) return;
+
+            const releaseDate = new Date(releaseDateStr).getTime();
             const now = new Date().getTime();
             const distance = releaseDate - now;
 
@@ -265,41 +273,62 @@ async function fetchUpcoming() {
     const grid = document.getElementById('upcomingGrid');
     if (!grid) return;
 
-    // KIỂM TRA: Nếu không ở trang chủ thì thoát, không nạp dữ liệu vào grid ẩn
-    const heroSection = document.querySelector('.hero-section');
-    if (heroSection && heroSection.style.display === 'none') return;
-
     try {
-        const res = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}&language=vi-VN&page=1`);
+        // 1. Gọi API lấy phim sắp chiếu (Thêm region=VN để dữ liệu gần gũi hơn)
+        const res = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}&language=vi-VN&region=VN`);
         const data = await res.json();
-        const movies = data.results.filter(m => new Date(m.release_date) > new Date()).slice(0, 5);
+        
+        // 2. Lọc lấy 5 phim có ngày khởi chiếu từ hôm nay trở đi
+        const today = new Date();
+        const movies = data.results
+            .filter(m => m.release_date && new Date(m.release_date) >= today)
+            .slice(0, 5);
 
+        // 3. Nếu không có phim nào thì báo lỗi
+        if (movies.length === 0) {
+            grid.innerHTML = "<p style='padding:20px; text-align:center; color:#666; width:100%;'>Hiện không có phim sắp chiếu.</p>";
+            return;
+        }
+
+        // 4. Render dữ liệu vào grid
         grid.innerHTML = movies.map(m => {
-            const dateParts = m.release_date.split('-');
-            const yearMonth = `${dateParts[0]}-${dateParts[1]}`;
-            const day = dateParts[2];
+    const dateParts = m.release_date.split('-');
+    const yearMonth = `${dateParts[1]}/${dateParts[0]}`; // Định dạng MM/YYYY
+    const day = dateParts[2];
 
-            return `
-                <div class="movie-card">
-                    <div class="poster-wrapper" style="position: relative; overflow: hidden; border-radius: 8px;">
-                        <span class="badge-score">★ ${m.vote_average.toFixed(1)}</span>
-                        <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" style="width:100%; display:block;">
-                        <div class="upcoming-date-overlay">
-                            <div class="year-month">${yearMonth}</div>
-                            <div class="day">${day}</div>
-                        </div>
-                        <div class="countdown-bar" data-date="${m.release_date}">Đang tính toán...</div>
-                    </div>
-                    <div class="movie-info">
-                        <div class="movie-title">${m.title}</div>
-                        <p style="font-size:10px; color:#666; margin-top:5px;">Lượt xem: ${Math.floor(m.popularity * 10).toLocaleString()}</p>
-                    </div>
+    return `
+        <div class="movie-card" onclick="openDetails(${m.id})" style="cursor:pointer; background: #1a1a1a; border-radius: 8px; overflow: hidden;">
+            <div class="poster-wrapper" style="position: relative; aspect-ratio: 2/3; overflow: hidden;">
+                <span class="badge-score" style="position: absolute; top: 8px; left: 8px; z-index: 3; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; font-size: 12px;">★ ${m.vote_average.toFixed(1)}</span>
+                
+                <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" style="width:100%; height:100%; object-fit: cover; display:block;">
+                
+                <div style="position: absolute; top: 8px; right: 8px; background: #e50914; color: #fff; padding: 4px 8px; border-radius: 4px; text-align: center; z-index: 2; box-shadow: 0 2px 10px rgba(0,0,0,0.5);">
+                    <div style="font-size: 16px; font-weight: bold; line-height: 1;">${day}</div>
+                    <div style="font-size: 9px; opacity: 0.9; margin-top: 2px;">thg ${dateParts[1]}</div>
                 </div>
-            `;
-        }).join('');
-        startCountdown(); 
-    } catch (e) { console.error("Lỗi Upcoming:", e); }
 
+                <div class="countdown-bar" data-date="${m.release_date}" style="position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); color: #ffc107; text-align: center; font-size: 13px; padding: 20px 0 8px 0; font-weight: bold; z-index: 2;">
+                    Đang tính...
+                </div>
+            </div>
+            
+            <div class="movie-info" style="padding: 10px;">
+                <div class="movie-title" style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${m.title}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                    <span style="font-size: 11px; color: #888;">📅 ${m.release_date}</span>
+                    <span style="font-size: 11px; color: #888;">🔥 ${Math.floor(m.popularity)}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}).join('');
+        // 5. Kích hoạt đếm ngược
+        startCountdown(); 
+    } catch (e) { 
+        console.error("Lỗi nạp phim Sắp Chiếu:", e); 
+        grid.innerHTML = "<p style='text-align:center; width:100%; color:red;'>Không thể tải dữ liệu sắp chiếu.</p>";
+    }
 }
 // ==========================================
 // 7. LOGIC CHI TIẾT PHIM & XEM PHIM (MỚI)
