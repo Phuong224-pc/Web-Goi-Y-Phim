@@ -685,27 +685,6 @@ body {
     border-color: #8bc34a !important;
     transition: 0.3s;
 }
-/* Nâng cấp hiệu ứng Modal */
-.modal {
-    backdrop-filter: blur(8px); /* Làm mờ trang web phía sau cực xịn */
-    background: rgba(0, 0, 0, 0.8);
-}
-
-.modal-content {
-    box-shadow: 0 0 25px rgba(229, 9, 20, 0.4); /* Đổ bóng đỏ mờ theo thương hiệu */
-    border: 1px solid #333;
-}
-
-.auth-form input:focus {
-    border-color: #8bc34a;
-    outline: none;
-}
-
-.btn-social:hover {
-    background: #333 !important;
-    border-color: #8bc34a !important;
-    transition: 0.3s;
-}
 .upcoming-style .movie-card {
     position: relative;
 }
@@ -992,3 +971,535 @@ body {
     .genre-tags { justify-content: center; }
     .meta-row { justify-content: center; }
 }
+/* ==========================================================================
+   BỔ SUNG RESPONSIVE CHO MOBILE & TABLET (ĐẶT Ở CUỐI FILE STYLE.CSS)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    /* 1. Thanh điều hướng (Navbar) */
+    .nav-container {
+        height: auto;
+        flex-direction: column; /* Xếp Logo, Menu, Search dọc nhau */
+        padding: 15px 20px;
+        gap: 15px;
+    }
+
+    .nav-menu {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap; /* Tự động xuống dòng nếu menu quá dài */
+        gap: 5px;
+    }
+
+    .nav-menu li a {
+        padding: 10px 12px; /* Thu nhỏ padding */
+        font-size: 12px;
+    }
+
+    /* 2. Dropdown Thể Loại */
+    .dropdown-content {
+        position: static; /* Đẩy xuống dạng khối, không thả nổi tràn màn hình */
+        min-width: 100%;
+        background: #1a1a1a; /* Chuyển nền tối cho hợp mobile */
+        border-top: none;
+        border-left: 2px solid #8bc34a;
+        padding: 10px;
+    }
+
+    .dropdown-grid {
+        grid-template-columns: repeat(2, 1fr); /* Mobile chia 2 cột thay vì 3 */
+    }
+
+    .dropdown-content span {
+        color: #eee;
+    }
+
+    /* 3. Thanh Tìm Kiếm & Nút Đăng Nhập */
+    .right-nav {
+        width: 100%;
+        justify-content: space-between; /* Đẩy search sang trái, login sang phải */
+    }
+
+    .search-box {
+        flex: 1; /* Tự co giãn chiếm không gian trống */
+        max-width: 250px;
+    }
+
+    /* 4. Banner Chính (Hero Section) */
+    .main-banner {
+        height: 350px; /* Thu nhỏ chiều cao banner trên điện thoại */
+    }
+
+    .banner-content {
+        padding: 20px;
+    }
+
+    .banner-content h1 {
+        font-size: 24px; /* Hạ cỡ chữ tiêu đề phim */
+    }
+
+    .banner-meta {
+        font-size: 11px;
+    }
+
+    .btn-play, .btn-trailer {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+
+    /* Nút qua lại slider */
+    .slider-btn {
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    /* Tab Đề cử */
+    .recommend-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .rec-tabs {
+        width: 100%;
+        overflow-x: auto; /* Cho phép vuốt ngang các tab nếu màn hình hẹp */
+        padding-bottom: 5px;
+    }
+
+    /* 5. Lưới danh sách phim (Movie Grid) */
+    .movie-grid {
+        /* Ghi đè auto-fill để ép về cố định 2 cột trên điện thoại nhìn poster cho rõ */
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 15px;
+    }
+
+    .movie-card img {
+        height: 220px; /* Hạ chiều cao ảnh poster một chút */
+    }
+
+    /* 6. Giao diện xem phim (Player) */
+    .player-container {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .player-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    /* 7. Giao diện Chi Tiết Phim Overlay (Sửa lỗi dính nút close) */
+    .btn-close-details {
+        top: 15px;
+        right: 15px;
+        font-size: 32px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .details-hero {
+        height: 40vh;
+    }
+
+    .details-poster img {
+        width: 180px; /* Thu nhỏ poster */
+    }
+
+    .cast-grid {
+        grid-template-columns: repeat(4, 1fr); /* Chia 4 cột nhỏ cho ảnh diễn viên */
+    }
+}
+
+/* Tối ưu cho màn hình cực nhỏ (Mobile < 480px) */
+@media (max-width: 480px) {
+    .nav-menu li a {
+        padding: 8px 6px;
+        font-size: 11px;
+    }
+    
+    .dropdown-grid {
+        grid-template-columns: 1fr; /* Màn hình quá nhỏ thì thể loại xếp thành 1 hàng dọc */
+    }
+
+    .cast-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+/* ==========================================================================
+   MẶC ĐỊNH CHO MÁY TÍNH (PC) - MÀN HÌNH LỚN
+   ========================================================================== */
+.navbar {
+    background-color: #141414;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    border-bottom: 2px solid #8bc34a;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 70px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Trên PC: Hiển thị dàn hàng ngang đầy đủ */
+.nav-responsive-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    margin-left: 30px;
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+}
+
+.right-header-mobile {
+    display: flex;
+    align-items: center;
+}
+
+/* Nút 3 gạch ẩn hoàn toàn khi dùng PC */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 5px;
+}
+.menu-toggle .bar {
+    display: block;
+    width: 24px;
+    height: 3px;
+    background-color: #fff;
+    transition: 0.3s;
+}
+
+/* ==========================================================================
+   ĐỊNH DẠNG RIÊNG CHO MOBILE & TABLET (TỪ 1024PX TRỞ XUỐNG)
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .nav-container {
+        height: 65px;
+        padding: 0 15px;
+        display: flex !important;
+        flex-direction: row !important; /* Ép buộc xếp hàng ngang */
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+
+    .logo {
+        font-size: 20px;
+        flex-shrink: 0; /* Không cho logo bị bóp méo */
+    }
+
+    /* Khối chứa ô tìm kiếm + nút 3 gạch xếp ngang hàng */
+    .right-header-mobile {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 12px;
+        flex: 1;
+        justify-content: flex-end;
+    }
+
+    /* Định cấu trúc lại ô tìm kiếm thu nhỏ gọn gàng */
+    .search-box {
+        width: 160px; /* Thu hẹp chiều rộng để tránh đè lên nút menu */
+        height: 34px;
+        position: relative;
+        margin: 0;
+    }
+    .search-box input {
+        width: 100%;
+        height: 100%;
+        font-size: 12px;
+        padding: 0 30px 0 10px;
+        border-radius: 20px;
+    }
+    .search-box button {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        font-size: 12px;
+    }
+
+    /* Hiển thị nút 3 gạch */
+    .menu-toggle {
+        display: flex !important;
+        z-index: 2001;
+    }
+
+    /* Menu dọc giấu sang bên trái */
+    .nav-responsive-wrapper {
+        position: fixed;
+        top: 65px;
+        left: -100%; /* Giấu menu */
+        width: 260px;
+        height: calc(100vh - 65px);
+        background: #141414;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        padding: 25px 20px;
+        gap: 20px;
+        transition: left 0.4s ease;
+        border-right: 2px solid #8bc34a;
+        z-index: 2000;
+        overflow-y: auto;
+        margin-left: 0;
+    }
+
+    /* Khi mở Menu */
+    .nav-responsive-wrapper.active {
+        left: 0 !important;
+    }
+
+    .nav-menu {
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+    }
+    .nav-menu li {
+        width: 100%;
+    }
+    .nav-menu li a {
+        display: block;
+        padding: 12px 0;
+        border-bottom: 1px solid #222;
+        font-size: 14px;
+        width: 100%;
+    }
+
+    /* Ẩn nút đăng nhập vào trong sidebar */
+    .right-nav-auth {
+        width: 100%;
+        margin-top: 15px;
+    }
+    .login-btn {
+        width: 100%;
+        padding: 10px;
+        text-align: center;
+        display: block;
+    }
+
+    /* Xoay nút 3 gạch thành dấu X */
+    .menu-toggle.active .bar:nth-child(2) { opacity: 0; }
+    .menu-toggle.active .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    .menu-toggle.active .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+    /* Xử lý Dropdown menu dọc trên Mobile */
+    .dropdown-content {
+        position: static;
+        background: #1a1a1a;
+        box-shadow: none;
+        border-left: 2px solid #8bc34a;
+        padding: 5px 10px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .dropdown-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+}
+/* Xử lý Dropdown mượt mà hơn trên Mobile */
+@media (max-width: 1024px) {
+    /* Mặc định ẩn nội dung con khi chưa click */
+    .dropdown .dropdown-content {
+        display: none !important; 
+        width: 100%;
+    }
+
+    /* Khi class .open được thêm vào qua JS, menu con sẽ hiển thị */
+    .dropdown.open .dropdown-content {
+        display: block !important;
+    }
+    
+    /* Xoay nhẹ mũi tên khi menu được mở */
+    .dropdown.open .dropdown-toggle span {
+        transform: rotate(180deg);
+        display: inline-block;
+    }
+}
+/* Desktop vs Mobile search visibility */
+.search-box.desktop-only { display: none; }
+@media (min-width: 1025px) {
+    /* On desktop show desktop-only search and hide header search */
+    .search-box.desktop-only { display: flex; }
+    .right-header-mobile .search-box { display: none; }
+    /* Hide the mobile header container on desktop to avoid layout shifts */
+    .right-header-mobile { display: none !important; }
+    /* Align desktop search to the right inside nav */
+    .nav-responsive-wrapper { display: flex; justify-content: space-between; align-items: center; }
+    .nav-responsive-wrapper > .right-nav-auth, .nav-responsive-wrapper > div[style] { display: flex; align-items: center; gap: 12px; }
+}
+@media (max-width: 1024px) {
+    /* On mobile ensure header search is visible */
+    .search-box.desktop-only { display: none; }
+    .right-header-mobile .search-box { display: flex; }
+}
+@media (max-width: 1024px) {
+    .nav-responsive-wrapper {
+        position: fixed;
+        top: 65px;
+        left: -100%; 
+        width: 280px;
+        /* Chiều cao khống chế vừa vặn màn hình điện thoại */
+        height: calc(100vh - 65px); 
+        background: #141414;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        padding: 25px 20px;
+        gap: 20px;
+        transition: left 0.4s ease;
+        border-right: 2px solid #8bc34a;
+        z-index: 2000;
+        
+        /* HAI DÒNG QUAN TRỌNG: Cho phép vuốt cuộn mượt mà bên trong menu */
+        overflow-y: auto !important; 
+        -webkit-overflow-scrolling: touch; 
+        margin-left: 0;
+    }
+    
+    /* Đảm bảo khi dropdown mở ra, các mục bên dưới (Quốc gia, Phim rạp) bị đẩy xuống tự nhiên */
+    .dropdown-content {
+        display: none;
+        position: static !important;
+        width: 100% !important;
+        background: #1a1a1a;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+    
+    .dropdown.open .dropdown-content {
+        display: block !important;
+    }
+}
+/* Mặc định ẩn menu con trên mobile */
+.sub-menu-mobile {
+    display: none;
+    padding-left: 20px; /* Thụt lề vào cho đẹp giống mẫu */
+    background-color: #1a1a1a;
+}
+
+/* Khi class .open được thêm vào menu cha hoặc chính nó */
+.sub-menu-mobile.open {
+    display: grid; /* Hoặc block tùy cách bạn chia layout */
+    grid-template-columns: repeat(2, 1fr); /* Chia 2 cột như hình bạn chụp */
+    gap: 10px;
+    padding: 10px 20px;
+}
+
+/* Xoay mũi tên khi mở menu con (nếu có) */
+.menu-item.active .arrow {
+    transform: rotate(180deg);
+    display: inline-block;
+}
+@media (max-width: 768px) { /* Thay đổi 768px theo breakpoint mobile của bạn */
+    
+    /* 1. Mặc định ẩn dropdown-content trên mobile */
+    .nav-menu .dropdown .dropdown-content {
+        display: none;
+        position: relative; /* Chuyển từ absolute của desktop về relative để đẩy các menu dưới xuống */
+        top: 0;
+        width: 100%;
+        background-color: #1a1a1a; /* Màu tối đồng bộ */
+        box-shadow: none;
+        padding: 10px 20px;
+    }
+
+    /* 2. Khi class .open-submenu được kích hoạt bằng JS */
+    .nav-menu .dropdown.open-submenu .dropdown-content {
+        display: block !important; /* Hiện menu con */
+    }
+
+    /* Cấu trúc grid cho Thể Loại trên mobile chia làm 2 cột như ảnh mẫu AnimeVietsub */
+    .nav-menu .dropdown.open-submenu .dropdown-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    /* Định dạng các item con bên trong */
+    .dropdown-content span {
+        display: block;
+        padding: 8px 0;
+        color: #ccc;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    /* 3. Xoay ngược mũi tên thành ▲ khi menu đang mở */
+    .nav-menu .dropdown.open-submenu .dropdown-toggle span {
+        transform: rotate(180deg);
+        display: inline-block;
+    }
+}
+/* ======= Quick restore overrides (to match original layout screenshot) ======= */
+body { padding-top: 80px; }
+
+.navbar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 2000;
+    background: #141414 !important;
+    border-bottom: 2px solid #8bc34a !important;
+}
+
+.nav-container { max-width: 1400px; margin: 0 auto; }
+
+.main-layout { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+
+.main-banner {
+    height: 480px !important;
+    border-radius: 12px !important;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    background-size: cover !important;
+    background-position: center !important;
+}
+
+.banner-content { padding: 40px !important; }
+
+.home-sidebar { min-width: 320px; }
+
+.container { max-width: 1400px; }
+
+/* Ensure hero banner sits below fixed navbar */
+.hero-section { margin-top: 0; }
+
+/* keep important visual accents */
+.widget-title { border-left: 3px solid #8bc34a; }
+
+/* remove duplicated modal/backdrop conflicts */
+.modal { background: rgba(0,0,0,0.85) !important; }
+
+/* end overrides */

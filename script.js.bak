@@ -1,0 +1,20 @@
+const API_KEY = "ec165fa8a1f0661dd141d4aed3680580";
+
+const listDiv = document.getElementById('movieList');
+const categoryTitle = document.getElementById('categoryTitle');
+const movieInput = document.getElementById('movieInput');
+const suggestionsBox = document.getElementById('searchSuggestions');
+
+// ==========================================
+// 1. QUẢN LÝ GIAO DIỆN (ẨN/HIỆN TRANG CHỦ)
+// ==========================================
+function toggleHomeUI(showHome) {
+    const heroSection = document.querySelector('.hero-section');
+    const upcomingGrid = document.getElementById('upcomingGrid');
+    const upcomingSection = upcomingGrid ? upcomingGrid.closest('.container') : null;
+
+    if (heroSection) {
+        heroSection.style.display = showHome ? 'block' : 'none';
+    }
+...
+// (backup truncated)

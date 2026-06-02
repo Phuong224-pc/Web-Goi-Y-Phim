@@ -2,15 +2,19 @@ const API_KEY = "ec165fa8a1f0661dd141d4aed3680580";
 
 const listDiv = document.getElementById('movieList');
 const categoryTitle = document.getElementById('categoryTitle');
-const movieInput = document.getElementById('movieInput');
-const suggestionsBox = document.getElementById('searchSuggestions');
+const mobileInput = document.getElementById('movieInput');
+const mobileSuggestions = document.getElementById('searchSuggestions');
+const desktopInput = document.getElementById('movieInputDesktop');
+const desktopSuggestions = document.getElementById('searchSuggestionsDesktop');
+
+// Global currently playing movie id (used by switchServer/closePlayer)
+let currentMovieId = null;
 
 // ==========================================
 // 1. QUẢN LÝ GIAO DIỆN (ẨN/HIỆN TRANG CHỦ)
 // ==========================================
 function toggleHomeUI(showHome) {
     const heroSection = document.querySelector('.hero-section');
-    // Tìm container chứa phần Sắp Chiếu (thẻ div bao quanh upcomingGrid)
     const upcomingGrid = document.getElementById('upcomingGrid');
     const upcomingSection = upcomingGrid ? upcomingGrid.closest('.container') : null;
 
@@ -18,21 +22,18 @@ function toggleHomeUI(showHome) {
         heroSection.style.display = showHome ? 'block' : 'none';
     }
 
-    // Ẩn/Hiện luôn cả phần Sắp Chiếu và đường kẻ ngang trang trí
     if (upcomingSection) {
         upcomingSection.style.display = showHome ? 'block' : 'none';
-        // Ẩn luôn thẻ <hr> liền sau nó nếu có
         const divider = upcomingSection.nextElementSibling;
         if (divider && divider.tagName === 'HR') {
             divider.style.display = showHome ? 'block' : 'none';
         }
     }
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ==========================================
-// 2. HÀM RENDER PHIM CHUNG
+// 2. HÀM RENDER PHIM CHUNG (ĐÃ CHUẨN HÓA)
 // ==========================================
 function render(movies, targetDiv = listDiv) {
     if (!movies || movies.length === 0) {
@@ -40,7 +41,7 @@ function render(movies, targetDiv = listDiv) {
         return;
     }
     targetDiv.innerHTML = movies.map(m => `
-        <div class="movie-card">
+        <div class="movie-card" onclick="openDetails(${m.id})">
             <span class="badge-score">★ ${m.vote_average ? m.vote_average.toFixed(1) : '0.0'}</span>
             <span class="badge-quality" style="${targetDiv.id === 'recommendGrid' ? 'background:#e50914' : ''}">
                 ${targetDiv.id === 'recommendGrid' ? 'TẬP ' + (Math.floor(Math.random() * 15) + 1) : 'Vietsub HD'}
@@ -57,12 +58,8 @@ function render(movies, targetDiv = listDiv) {
 // ==========================================
 // 3. LẤY DỮ LIỆU PHIM (FETCH FUNCTIONS)
 // ==========================================
-
-// Lấy phim danh mục chính (Trending, Top Rated...)
 async function fetchMovies(type) {
-    // Chỉ hiện Banner/Sidebar nếu là mục 'trending' (Trang chủ)
     toggleHomeUI(type === 'trending');
-
     const sub = (type === 'trending') ? 'popular' : type;
     const url = `https://api.themoviedb.org/3/movie/${sub}?api_key=${API_KEY}&language=vi-VN`;
     try {
@@ -80,12 +77,10 @@ async function fetchMovies(type) {
     } catch (e) { console.error(e); }
 }
 
-// Lấy phim theo loại (Phim Lẻ / Phim Bộ)
 async function fetchMoviesType(type) {
     toggleHomeUI(false); 
     categoryTitle.innerText = (type === 'movie') ? "🎬 DANH SÁCH PHIM LẺ" : "📺 DANH SÁCH PHIM BỘ";
     const url = `https://api.themoviedb.org/3/discover/${type}?api_key=${API_KEY}&language=vi-VN&sort_by=popularity.desc&page=1`;
-
     try {
         const res = await fetch(url);
         const data = await res.json();
@@ -93,7 +88,6 @@ async function fetchMoviesType(type) {
     } catch (e) { console.error("Lỗi:", e); }
 }
 
-// Lọc theo Quốc gia
 async function fetchByRegion(code) {
     toggleHomeUI(false);
     categoryTitle.innerText = `🌍 PHIM QUỐC GIA: ${code}`;
@@ -102,7 +96,6 @@ async function fetchByRegion(code) {
     render(data.results);
 }
 
-// Lọc theo Thể loại
 async function fetchByGenre(id) {
     toggleHomeUI(false);
     categoryTitle.innerText = "🔍 LỌC THEO THỂ LOẠI";
@@ -111,7 +104,6 @@ async function fetchByGenre(id) {
     render(data.results);
 }
 
-// Phần ĐỀ CỬ (Duy trì ở Trang Chủ)
 async function fetchRecommended(type, element = null) {
     const grid = document.getElementById('recommendGrid');
     if (!grid) return;
@@ -146,7 +138,7 @@ async function loadExtras() {
             setInterval(() => changeBanner(1), 5000);
 
             document.getElementById('hotWeekly').innerHTML = bannerList.slice(0, 5).map((m, i) => `
-                <div class="side-item">
+                <div class="side-item" onclick="openDetails(${m.id})">
                     <span style="color:#8bc34a; font-weight:bold; font-size:18px; width:25px;">${i+1}</span>
                     <img src="https://image.tmdb.org/t/p/w92${m.poster_path}">
                     <div class="side-item-info">
@@ -156,16 +148,16 @@ async function loadExtras() {
                 </div>`).join('');
 
             document.getElementById('newUpdates').innerHTML = bannerList.slice(5, 13).map(m => `
-    <li class="new-update-item">
-        <div class="update-thumb">
-            <img src="${m.poster_path ? 'https://image.tmdb.org/t/p/w92' + m.poster_path : 'https://via.placeholder.com/92x138?text=No+Poster'}" alt="${m.title || m.name}">
-        </div>
-        <div class="update-info">
-            <a href="#" class="update-name-link">${m.title || m.name}</a>
-            <span class="update-hd-tag">HD</span>
-        </div>
-    </li>
-`).join('');
+                <li class="new-update-item" onclick="openDetails(${m.id})">
+                    <div class="update-thumb">
+                        <img src="${m.poster_path ? 'https://image.tmdb.org/t/p/w92' + m.poster_path : 'https://via.placeholder.com/92x138?text=No+Poster'}" alt="${m.title || m.name}">
+                    </div>
+                    <div class="update-info">
+                        <a href="javascript:void(0);" class="update-name-link">${m.title || m.name}</a>
+                        <span class="update-hd-tag">HD</span>
+                    </div>
+                </li>
+            `).join('');
         }
     } catch (e) { console.log(e); }
 }
@@ -189,27 +181,57 @@ function changeBanner(dir) {
 // ==========================================
 // 5. TÌM KIẾM & AUTH
 // ==========================================
-movieInput.addEventListener('input', async function() {
-    if (this.value.length < 2) return suggestionsBox.style.display = 'none';
-    const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(this.value)}&language=vi-VN`);
+function escapeSingle(str){ return (str||'').replace(/'/g,"\\'"); }
+
+async function fetchSuggestions(query) {
+    const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=vi-VN`);
     const data = await res.json();
-    suggestionsBox.innerHTML = data.results.slice(0, 6).map(m => `
-        <div class="suggestion-item" onclick="selectSearch('${(m.title || m.name).replace(/'/g, "\\'")}')">
+    return data.results || [];
+}
+
+function renderSuggestions(results, container, source) {
+    if(!container) return;
+    container.innerHTML = results.slice(0,6).map(m => `
+        <div class="suggestion-item" onclick="selectSearch('${escapeSingle(m.title||m.name)}', '${source}')">
             <img src="${m.poster_path ? 'https://image.tmdb.org/t/p/w92' + m.poster_path : 'https://via.placeholder.com/92x138'}">
             <span>${m.title || m.name}</span>
-        </div>`).join('');
-    suggestionsBox.style.display = 'block';
-});
+        </div>
+    `).join('');
+    container.style.display = 'block';
+}
 
-function selectSearch(t) { movieInput.value = t; suggestionsBox.style.display = 'none'; handleSearch(); }
+async function attachInput(inputElem, suggestionsElem, sourceName) {
+    if(!inputElem) return;
+    inputElem.addEventListener('input', async function(){
+        if (this.value.length < 2) { if(suggestionsElem) suggestionsElem.style.display='none'; return; }
+        try {
+            const results = await fetchSuggestions(this.value);
+            renderSuggestions(results, suggestionsElem, sourceName);
+        } catch(e){ console.error(e); }
+    });
+}
 
-async function handleSearch() {
-    toggleHomeUI(false); 
-    const q = movieInput.value;
-    categoryTitle.innerText = `🔍 KẾT QUẢ: ${q.toUpperCase()}`;
-    const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(q)}&language=vi-VN`);
-    const data = await res.json();
-    render(data.results);
+attachInput(mobileInput, mobileSuggestions, 'mobile');
+attachInput(desktopInput, desktopSuggestions, 'desktop');
+
+function selectSearch(t, source){
+    if(mobileInput) mobileInput.value = t;
+    if(desktopInput) desktopInput.value = t;
+    if(source === 'mobile' && mobileSuggestions) mobileSuggestions.style.display = 'none';
+    if(source === 'desktop' && desktopSuggestions) desktopSuggestions.style.display = 'none';
+    handleSearch(t, source);
+}
+
+async function handleSearch(q = null, source = 'mobile'){
+    toggleHomeUI(false);
+    const query = q || (source === 'desktop' ? (desktopInput ? desktopInput.value : '') : (mobileInput ? mobileInput.value : ''));
+    if(!query) return;
+    categoryTitle.innerText = `🔍 KẾT QUẢ: ${query.toUpperCase()}`;
+    try{
+        const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=vi-VN`);
+        const data = await res.json();
+        render(data.results);
+    } catch(e){ console.error('Tìm kiếm lỗi:', e); }
 }
 
 function toggleAuth() { 
@@ -224,16 +246,7 @@ function switchTab(t) {
 }
 
 // ==========================================
-// 6. KHỞI CHẠY (ON LOAD)
-// ==========================================
-window.addEventListener('DOMContentLoaded', () => {
-    fetchMovies('trending');
-    loadExtras();
-    fetchRecommended('today');
-    fetchUpcoming();
-});
-// ==========================================
-// 3.5. LOGIC SẮP CHIẾU & ĐẾM NGƯỢC (FIXED)
+// 6. SẮP CHIẾU & ĐẾM NGƯỢC
 // ==========================================
 let countdownInterval;
 
@@ -241,7 +254,6 @@ function startCountdown() {
     if (countdownInterval) clearInterval(countdownInterval);
     countdownInterval = setInterval(() => {
         const timers = document.querySelectorAll('.countdown-bar');
-        // Nếu không còn timer nào trên màn hình thì dừng interval để tiết kiệm tài nguyên
         if (timers.length === 0) {
             clearInterval(countdownInterval);
             return;
@@ -274,67 +286,55 @@ async function fetchUpcoming() {
     if (!grid) return;
 
     try {
-        // 1. Gọi API lấy phim sắp chiếu (Thêm region=VN để dữ liệu gần gũi hơn)
         const res = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}&language=vi-VN&region=VN`);
         const data = await res.json();
         
-        // 2. Lọc lấy 5 phim có ngày khởi chiếu từ hôm nay trở đi
         const today = new Date();
         const movies = data.results
             .filter(m => m.release_date && new Date(m.release_date) >= today)
             .slice(0, 5);
 
-        // 3. Nếu không có phim nào thì báo lỗi
         if (movies.length === 0) {
             grid.innerHTML = "<p style='padding:20px; text-align:center; color:#666; width:100%;'>Hiện không có phim sắp chiếu.</p>";
             return;
         }
 
-        // 4. Render dữ liệu vào grid
         grid.innerHTML = movies.map(m => {
-    const dateParts = m.release_date.split('-');
-    const yearMonth = `${dateParts[1]}/${dateParts[0]}`; // Định dạng MM/YYYY
-    const day = dateParts[2];
+            const dateParts = m.release_date.split('-');
+            const day = dateParts[2];
 
-    return `
-        <div class="movie-card" onclick="openDetails(${m.id})" style="cursor:pointer; background: #1a1a1a; border-radius: 8px; overflow: hidden;">
-            <div class="poster-wrapper" style="position: relative; aspect-ratio: 2/3; overflow: hidden;">
-                <span class="badge-score" style="position: absolute; top: 8px; left: 8px; z-index: 3; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; font-size: 12px;">★ ${m.vote_average.toFixed(1)}</span>
-                
-                <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" style="width:100%; height:100%; object-fit: cover; display:block;">
-                
-                <div style="position: absolute; top: 8px; right: 8px; background: #e50914; color: #fff; padding: 4px 8px; border-radius: 4px; text-align: center; z-index: 2; box-shadow: 0 2px 10px rgba(0,0,0,0.5);">
-                    <div style="font-size: 16px; font-weight: bold; line-height: 1;">${day}</div>
-                    <div style="font-size: 9px; opacity: 0.9; margin-top: 2px;">thg ${dateParts[1]}</div>
+            return `
+                <div class="movie-card" onclick="openDetails(${m.id})" style="cursor:pointer; background: #1a1a1a; border-radius: 8px; overflow: hidden;">
+                    <div class="poster-wrapper" style="position: relative; aspect-ratio: 2/3; overflow: hidden;">
+                        <span class="badge-score" style="position: absolute; top: 8px; left: 8px; z-index: 3; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; font-size: 12px;">★ ${m.vote_average.toFixed(1)}</span>
+                        <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" style="width:100%; height:100%; object-fit: cover; display:block;">
+                        <div style="position: absolute; top: 8px; right: 8px; background: #e50914; color: #fff; padding: 4px 8px; border-radius: 4px; text-align: center; z-index: 2;">
+                            <div style="font-size: 16px; font-weight: bold; line-height: 1;">${day}</div>
+                            <div style="font-size: 9px; opacity: 0.9; margin-top: 2px;">thg ${dateParts[1]}</div>
+                        </div>
+                        <div class="countdown-bar" data-date="${m.release_date}" style="position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); color: #ffc107; text-align: center; font-size: 13px; padding: 20px 0 8px 0; font-weight: bold; z-index: 2;">
+                            Đang tính...
+                        </div>
+                    </div>
+                    <div class="movie-info" style="padding: 10px;">
+                        <div class="movie-title" style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${m.title}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                            <span style="font-size: 11px; color: #888;">📅 ${m.release_date}</span>
+                            <span style="font-size: 11px; color: #888;">🔥 ${Math.floor(m.popularity)}</span>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="countdown-bar" data-date="${m.release_date}" style="position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); color: #ffc107; text-align: center; font-size: 13px; padding: 20px 0 8px 0; font-weight: bold; z-index: 2;">
-                    Đang tính...
-                </div>
-            </div>
-            
-            <div class="movie-info" style="padding: 10px;">
-                <div class="movie-title" style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff;">${m.title}</div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-                    <span style="font-size: 11px; color: #888;">📅 ${m.release_date}</span>
-                    <span style="font-size: 11px; color: #888;">🔥 ${Math.floor(m.popularity)}</span>
-                </div>
-            </div>
-        </div>
-    `;
-}).join('');
-        // 5. Kích hoạt đếm ngược
+            `;
+        }).join('');
         startCountdown(); 
     } catch (e) { 
         console.error("Lỗi nạp phim Sắp Chiếu:", e); 
-        grid.innerHTML = "<p style='text-align:center; width:100%; color:red;'>Không thể tải dữ liệu sắp chiếu.</p>";
     }
 }
-// ==========================================
-// 7. LOGIC CHI TIẾT PHIM & XEM PHIM (MỚI)
-// ==========================================
 
-// Hàm mở trang chi tiết khi click vào Movie Card
+// ==========================================
+// 7. LOGIC CHI TIẾT PHIM & XEM PHIM
+// ==========================================
 async function openDetails(movieId) {
     const detailsPage = document.getElementById('movieDetailsPage');
     if (!detailsPage) return;
@@ -343,26 +343,20 @@ async function openDetails(movieId) {
         const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${API_KEY}&language=vi-VN&append_to_response=credits,recommendations`);
         const m = await res.json();
 
-        // 1. Cập nhật Banner Chi tiết
         const hero = detailsPage.querySelector('.details-hero');
         hero.style.backgroundImage = `url('https://image.tmdb.org/t/p/original${m.backdrop_path}')`;
 
-        // 2. Cập nhật thông tin cơ bản
         detailsPage.querySelector('.details-poster img').src = `https://image.tmdb.org/t/p/w500${m.poster_path}`;
         detailsPage.querySelector('.details-info h1').innerText = m.title;
         detailsPage.querySelector('.meta-row').innerHTML = `
-            <span>📅 ${m.release_date.split('-')[0]}</span>
+            <span>📅 ${m.release_date ? m.release_date.split('-')[0] : 'N/A'}</span>
             <span>⭐ ${m.vote_average.toFixed(1)}</span>
             <span>⏱️ ${m.runtime} phút</span>
         `;
         
-        // 3. Cập nhật thể loại
         detailsPage.querySelector('.genre-tags').innerHTML = m.genres.map(g => `<span>${g.name}</span>`).join('');
-        
-        // 4. Cập nhật nội dung
         detailsPage.querySelector('.overview-text').innerText = m.overview || "Nội dung đang được cập nhật...";
 
-        // 5. Cập nhật dàn diễn viên (Lấy 6 người đầu)
         detailsPage.querySelector('.cast-grid').innerHTML = m.credits.cast.slice(0, 6).map(c => `
             <div class="cast-item">
                 <img src="${c.profile_path ? 'https://image.tmdb.org/t/p/w185' + c.profile_path : 'https://via.placeholder.com/100x150'}">
@@ -370,75 +364,172 @@ async function openDetails(movieId) {
             </div>
         `).join('');
 
-        // 6. Gán ID cho nút xem phim
-        const playBtn = detailsPage.querySelector('.btn-play-now');
+        // Attach the details "XEM NGAY" button (id="detailsPlayBtn") to open the player
+        const playBtn = detailsPage.querySelector('#detailsPlayBtn');
         if (playBtn) {
             playBtn.onclick = () => playMovie(m.id, m.title);
         }
 
-        // Hiển thị Overlay
+        // Also wire the hero play button to play the current banner movie if present
+        const heroPlay = document.getElementById('heroPlayBtn');
+        if (heroPlay) {
+            heroPlay.onclick = () => playMovie(m.id, m.title);
+        }
+
         detailsPage.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Chống cuộn trang chính khi đang xem chi tiết
+        document.body.style.overflow = 'hidden';
 
     } catch (e) { console.error("Lỗi lấy chi tiết:", e); }
 }
 
-// Hàm đóng trang chi tiết
 function closeDetails() {
     const detailsPage = document.getElementById('movieDetailsPage');
-    detailsPage.classList.remove('active');
+    if(detailsPage) detailsPage.classList.remove('active');
     document.body.style.overflow = 'auto';
-    // Dừng phim nếu đang phát khi đóng
     const playerModal = document.getElementById('playerModal');
     if (playerModal) playerModal.style.display = 'none';
     document.getElementById('moviePlayer').src = '';
 }
 
-// Hàm xử lý phát phim với Multi-Server
 function playMovie(id, title) {
     const playerModal = document.getElementById('playerModal');
     const iframe = document.getElementById('moviePlayer');
     const serverBtns = document.querySelectorAll('.btn-server');
-
+    // set global id so switchServer() can access it
+    currentMovieId = id;
     playerModal.style.display = 'block';
-    
-    // Mặc định chạy Server 1 (Vidsrc.pro)
+
     const servers = [
         `https://vidsrc.pro/embed/movie/${id}`,
         `https://vidsrc.me/embed/movie/${id}`,
         `https://2embed.org/embed/movie/${id}`
     ];
 
+    // default to server 1
     iframe.src = servers[0];
-
-    // Xử lý đổi Server khi click
     serverBtns.forEach((btn, index) => {
+        btn.classList.toggle('active', index === 0);
+        // also attach handlers so clicks update iframe
         btn.onclick = () => {
             serverBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             iframe.src = servers[index];
+            currentMovieId = id; // ensure global id remains current
         };
     });
 }
 
-// ==========================================
-// 8. CẬP NHẬT HÀM RENDER (THÊM SỰ KIỆN CLICK)
-// ==========================================
+// Called from the player header buttons in HTML: switch active server
+function switchServer(serverNum) {
+    const iframe = document.getElementById('moviePlayer');
+    const btns = document.querySelectorAll('.btn-server');
+    btns.forEach((b, i) => b.classList.toggle('active', (i + 1) === serverNum));
+    if (!currentMovieId) return;
+    let url = '';
+    if (serverNum === 1) url = `https://vidsrc.pro/embed/movie/${currentMovieId}`;
+    else if (serverNum === 2) url = `https://vidsrc.me/embed/movie/${currentMovieId}`;
+    else url = `https://2embed.org/embed/movie/${currentMovieId}`;
+    iframe.src = url;
+}
 
-// Ghi đè hàm render cũ của bạn để thêm thuộc tính onclick
-function render(movies, targetDiv = listDiv) {
-    if (!movies || movies.length === 0) {
-        targetDiv.innerHTML = "<p style='padding:50px; text-align:center;'>Dữ liệu đang trống...</p>";
-        return;
+function closePlayer() {
+    const playerModal = document.getElementById('playerModal');
+    if (playerModal) playerModal.style.display = 'none';
+    const iframe = document.getElementById('moviePlayer');
+    if (iframe) iframe.src = '';
+    currentMovieId = null;
+}
+
+// ==========================================
+// 8. ĐIỀU KHIỂN ĐÓNG/MỞ MENU KHÔNG BỊ XUNG ĐỘT
+// ==========================================
+document.addEventListener("DOMContentLoaded", function() {
+    const mobileMenuBtn = document.getElementById("mobile-menu");
+    const navWrapper = document.getElementById("nav-wrapper");
+
+    // Click nút 3 gạch để bật/tắt menu dọc
+    if (mobileMenuBtn && navWrapper) {
+        mobileMenuBtn.addEventListener("click", function(e) {
+            e.preventDefault();
+            e.stopPropagation(); 
+            mobileMenuBtn.classList.toggle("active");
+            navWrapper.classList.toggle("active");
+        });
+
+        // Bảo vệ: Vuốt chạm, lướt bên trong menu dọc KHÔNG làm menu bị ẩn
+        navWrapper.addEventListener("click", function(e) {
+            e.stopPropagation(); 
+        });
+        navWrapper.addEventListener("touchmove", function(e) {
+            e.stopPropagation(); 
+        }, { passive: true });
     }
-    targetDiv.innerHTML = movies.map(m => `
-        <div class="movie-card" onclick="openDetails(${m.id})">
-            <span class="badge-score">★ ${m.vote_average ? m.vote_average.toFixed(1) : '0.0'}</span>
-            <span class="badge-quality">Vietsub HD</span>
-            <img src="${m.poster_path ? 'https://image.tmdb.org/t/p/w500' + m.poster_path : 'https://via.placeholder.com/500x750?text=No+Poster'}">
-            <div class="movie-info">
-                <div class="movie-title">${m.title || m.name}</div>
-            </div>
-        </div>
-    `).join('');
+
+    // Logic click danh mục Dropdown (Thể Loại / Quốc Gia)
+    document.addEventListener("click", function(e) {
+        const toggle = e.target.closest(".dropdown-toggle");
+        
+        if (toggle) {
+            if (window.innerWidth <= 1024) {
+                e.preventDefault(); 
+                e.stopPropagation();
+
+                const parentLi = toggle.parentElement;
+                const isOpen = parentLi.classList.contains('open');
+
+                // Đóng dropdown khác
+                document.querySelectorAll('.dropdown').forEach(item => {
+                    item.classList.remove('open');
+                });
+
+                if (!isOpen) {
+                    parentLi.classList.add('open');
+                }
+            }
+        } else {
+            // Click ra hẳn vùng trống bên ngoài thì thu nhỏ dropdown lại
+            if (window.innerWidth <= 1024) {
+                document.querySelectorAll('.dropdown').forEach(item => {
+                    item.classList.remove('open');
+                });
+            }
+        }
+    });
+
+    // CHỈ ĐÓNG MENU KHI CLICK VÀO CÁC MỤC CON THỰC SỰ ĐỂ CHUYỂN TRANG
+    const realLinks = document.querySelectorAll(".nav-menu li:not(.dropdown) a, .dropdown-content span");
+    realLinks.forEach(link => {
+        link.addEventListener("click", () => {
+            if (mobileMenuBtn && navWrapper) {
+                mobileMenuBtn.classList.remove("active");
+                navWrapper.classList.remove("active");
+            }
+        });
+    });
+});
+
+// KHỞI CHẠY KHÓI TẢI TRANG TRÊN CÙNG
+window.addEventListener('DOMContentLoaded', () => {
+    fetchMovies('trending');
+    loadExtras();
+    fetchRecommended('today');
+    fetchUpcoming();
+});
+function toggleMobileSubMenu(element, event) {
+    // Chỉ kích hoạt logic này khi đang ở màn hình Mobile (width <= 768px)
+    if (window.innerWidth <= 768) {
+        event.preventDefault(); // Ngăn chặn hành vi cuộn hay nhảy trang
+        
+        const currentDropdown = element.parentElement; // Lấy thẻ li.dropdown hiện tại
+        
+        // Tìm và đóng tất cả các dropdown khác đang mở trước đó
+        document.querySelectorAll('.nav-menu .dropdown').forEach(dropdown => {
+            if (dropdown !== currentDropdown) {
+                dropdown.classList.remove('open-submenu');
+            }
+        });
+        
+        // Bật/tắt class 'open-submenu' cho dropdown hiện tại
+        currentDropdown.classList.toggle('open-submenu');
+    }
 }

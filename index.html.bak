@@ -66,17 +66,8 @@
                 <li><a href="#" onclick="fetchMovies('top_rated')">TOP PHIM</a></li>
             </ul>
 
-            <div style="display:flex; align-items:center; gap:12px;">
-                <!-- Desktop-only search (hidden on mobile) -->
-                <div class="search-box desktop-only">
-                    <input type="text" id="movieInputDesktop" placeholder="Tìm tên phim..." autocomplete="off">
-                    <button id="searchBtnDesktop" onclick="handleSearch(null, 'desktop')">🔍</button>
-                    <div id="searchSuggestionsDesktop" class="suggestions-list"></div>
-                </div>
-
-                <div class="right-nav-auth">
-                    <button class="login-btn" onclick="toggleAuth()">ĐĂNG NHẬP</button>
-                </div>
+            <div class="right-nav-auth">
+                <button class="login-btn" onclick="toggleAuth()">ĐĂNG NHẬP</button>
             </div>
         </div> 
     </div>
