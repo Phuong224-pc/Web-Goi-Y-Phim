@@ -59,6 +59,7 @@ function render(movies, targetDiv = listDiv) {
 // 3. LẤY DỮ LIỆU PHIM (FETCH FUNCTIONS)
 // ==========================================
 async function fetchMovies(type) {
+    closeDetails(false);
     toggleHomeUI(type === 'trending');
     const sub = (type === 'trending') ? 'popular' : type;
     const url = `https://api.themoviedb.org/3/movie/${sub}?api_key=${API_KEY}&language=vi-VN`;
@@ -78,6 +79,7 @@ async function fetchMovies(type) {
 }
 
 async function fetchMoviesType(type) {
+    closeDetails(false);
     toggleHomeUI(false); 
     categoryTitle.innerText = (type === 'movie') ? "🎬 DANH SÁCH PHIM LẺ" : "📺 DANH SÁCH PHIM BỘ";
     const url = `https://api.themoviedb.org/3/discover/${type}?api_key=${API_KEY}&language=vi-VN&sort_by=popularity.desc&page=1`;
@@ -89,6 +91,7 @@ async function fetchMoviesType(type) {
 }
 
 async function fetchByRegion(code) {
+    closeDetails(false);
     toggleHomeUI(false);
     categoryTitle.innerText = `🌍 PHIM QUỐC GIA: ${code}`;
     const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_origin_country=${code}&language=vi-VN&sort_by=popularity.desc`);
@@ -97,6 +100,7 @@ async function fetchByRegion(code) {
 }
 
 async function fetchByGenre(id) {
+    closeDetails(false);
     toggleHomeUI(false);
     categoryTitle.innerText = "🔍 LỌC THEO THỂ LOẠI";
     const res = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${id}&language=vi-VN&sort_by=popularity.desc`);
@@ -223,6 +227,7 @@ function selectSearch(t, source){
 }
 
 async function handleSearch(q = null, source = 'mobile'){
+    closeDetails(false);
     toggleHomeUI(false);
     const query = q || (source === 'desktop' ? (desktopInput ? desktopInput.value : '') : (mobileInput ? mobileInput.value : ''));
     if(!query) return;
@@ -335,9 +340,13 @@ async function fetchUpcoming() {
 // ==========================================
 // 7. LOGIC CHI TIẾT PHIM & XEM PHIM
 // ==========================================
+let lastScrollPosition = 0;
+
 async function openDetails(movieId) {
     const detailsPage = document.getElementById('movieDetailsPage');
     if (!detailsPage) return;
+
+    currentMovieId = movieId;
 
     try {
         const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${API_KEY}&language=vi-VN&append_to_response=credits,recommendations`);
@@ -376,19 +385,32 @@ async function openDetails(movieId) {
             heroPlay.onclick = () => playMovie(m.id, m.title);
         }
 
+        lastScrollPosition = window.scrollY;
+        const mainPageContent = document.getElementById('mainPageContent');
+        if (mainPageContent) mainPageContent.style.display = 'none';
+
         detailsPage.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        renderComments(movieId);
 
     } catch (e) { console.error("Lỗi lấy chi tiết:", e); }
 }
 
-function closeDetails() {
+function closeDetails(restoreScroll = true) {
     const detailsPage = document.getElementById('movieDetailsPage');
-    if(detailsPage) detailsPage.classList.remove('active');
-    document.body.style.overflow = 'auto';
+    if (detailsPage) detailsPage.classList.remove('active');
+
+    const mainPageContent = document.getElementById('mainPageContent');
+    if (mainPageContent) mainPageContent.style.display = 'block';
+
     const playerModal = document.getElementById('playerModal');
     if (playerModal) playerModal.style.display = 'none';
-    document.getElementById('moviePlayer').src = '';
+    const iframe = document.getElementById('moviePlayer');
+    if (iframe) iframe.src = '';
+
+    if (restoreScroll) {
+        window.scrollTo(0, lastScrollPosition);
+    }
 }
 
 function playMovie(id, title) {
@@ -506,7 +528,254 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     });
+
+    // ==========================================
+    // XỬ LÝ ĐĂNG NHẬP & CHUYỂN HƯỚNG ADMIN
+    // ==========================================
+    const authForm = document.getElementById("authForm");
+    if (authForm) {
+        authForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            const emailInput = document.getElementById("userEmail");
+            const passInput = document.getElementById("userPass");
+            const confirmInput = document.getElementById("userConfirmPass");
+            
+            if (!emailInput || !passInput) return;
+            
+            const email = emailInput.value.trim().toLowerCase();
+            const password = passInput.value;
+            
+            const isRegister = document.getElementById("registerFields").style.display === "block";
+            
+            // Default mock users list
+            const initialUsers = [
+              { id: "USR-4829", name: "Trần Thanh Phương", email: "phuongtt@moviepro.vn", type: "Registered", joinDate: "2026-01-10", watchTime: "124 hrs", status: "Active" },
+              { id: "USR-7491", name: "Alex Johnson", email: "alex.j@gmail.com", type: "Registered", joinDate: "2026-03-15", watchTime: "87 hrs", status: "Active" },
+              { id: "USR-1029", name: "Nguyễn Văn Hùng", email: "hungnv@outlook.com", type: "Registered", joinDate: "2026-04-02", watchTime: "210 hrs", status: "Active" },
+              { id: "USR-8842", name: "Sarah Parker", email: "sarah.p@yahoo.com", type: "Registered", joinDate: "2026-05-19", watchTime: "45 hrs", status: "Blocked" },
+              { id: "USR-3051", name: "Phạm Minh Đức", email: "ducpm@fpt.edu.vn", type: "Registered", joinDate: "2026-06-01", watchTime: "12 hrs", status: "Active" },
+              { id: "GST-9482", name: "Anonymous (IP: 113.161.43.12)", email: "Session: sess_a8f902de", type: "Guest", joinDate: "2026-06-15", watchTime: "3.5 hrs", status: "Active" },
+              { id: "GST-2957", name: "Anonymous (IP: 14.232.89.102)", email: "Session: sess_b230df8c", type: "Guest", joinDate: "2026-06-15", watchTime: "1.2 hrs", status: "Active" },
+              { id: "GST-6381", name: "Anonymous (IP: 27.72.145.30)", email: "Session: sess_7f2cd4ba", type: "Guest", joinDate: "2026-06-14", watchTime: "15 mins", status: "Active" },
+              { id: "GST-4820", name: "Anonymous (IP: 115.79.201.8)", email: "Session: sess_6d83e29f", type: "Guest", joinDate: "2026-06-14", watchTime: "8.4 hrs", status: "Active" },
+              { id: "GST-0294", name: "Anonymous (IP: 42.113.204.55)", email: "Session: sess_c92de102", type: "Guest", joinDate: "2026-06-13", watchTime: "0 mins", status: "Blocked" }
+            ];
+
+            // 1. XỬ LÝ ĐĂNG KÝ (REGISTER MODE)
+            if (isRegister) {
+                const confirmPassword = confirmInput ? confirmInput.value : "";
+                if (password !== confirmPassword) {
+                    alert("Xác nhận mật khẩu không trùng khớp!");
+                    return;
+                }
+                
+                let usersList = [];
+                const stored = localStorage.getItem("users_list");
+                if (stored) {
+                    try { usersList = JSON.parse(stored); } catch(e) { usersList = initialUsers; }
+                } else {
+                    usersList = initialUsers;
+                }
+
+                // Kiểm tra trùng lặp email / username
+                const exists = usersList.some(u => u.email.toLowerCase() === email || u.name.toLowerCase() === email);
+                if (exists) {
+                    alert("Email hoặc tên đăng nhập này đã tồn tại trên hệ thống!");
+                    return;
+                }
+
+                // Tạo tài khoản đăng ký mới
+                const nameDisplay = emailInput.value.split('@')[0];
+                const newUser = {
+                    id: "USR-" + Math.floor(1000 + Math.random() * 9000),
+                    name: nameDisplay.charAt(0).toUpperCase() + nameDisplay.slice(1),
+                    email: email.includes('@') ? email : `${email}@moviepro.vn`,
+                    type: "Registered",
+                    joinDate: new Date().toISOString().split('T')[0],
+                    watchTime: "0 mins",
+                    status: "Active"
+                };
+
+                usersList.push(newUser);
+                localStorage.setItem("users_list", JSON.stringify(usersList));
+                
+                alert("Đăng ký tài khoản mới thành công!\nBạn đã có thể đăng nhập bằng tài khoản này.");
+                
+                // Khôi phục form về trạng thái đăng nhập
+                passInput.value = "";
+                if (confirmInput) confirmInput.value = "";
+                switchTab('login');
+                return;
+            }
+            
+            // 2. XỬ LÝ ĐĂNG NHẬP (LOGIN MODE)
+            // Đăng nhập quản trị viên
+            if (email === 'admin' || email.startsWith('admin@')) {
+                if (password === 'admin' || password === 'admin123') {
+                    alert("Đăng nhập quyền Quản trị viên thành công!\nĐang chuyển hướng đến trang Admin Dashboard...");
+                    toggleAuth();
+                    window.location.href = './admin/index.html';
+                    return;
+                } else {
+                    alert("Mật khẩu tài khoản quản trị chưa chính xác!");
+                    return;
+                }
+            }
+            
+            // Đăng nhập tài khoản thông thường
+            let usersList = [];
+            const stored = localStorage.getItem("users_list");
+            if (stored) {
+                try { usersList = JSON.parse(stored); } catch(e) { usersList = initialUsers; }
+            } else {
+                usersList = initialUsers;
+            }
+
+            const matchUser = usersList.find(u => u.email.toLowerCase() === email || u.name.toLowerCase() === email);
+            if (matchUser) {
+                if (matchUser.status === 'Blocked') {
+                    alert("Tài khoản của bạn đã bị Quản trị viên khóa truy cập!");
+                    return;
+                }
+                alert(`Đăng nhập thành công! Chào mừng, ${matchUser.name}!`);
+                localStorage.setItem("user_logged_in", matchUser.name);
+                toggleAuth();
+                updateAuthUI();
+            } else {
+                // Đăng nhập nhanh cho tài khoản giả định khác
+                alert(`Đăng nhập thành công! Chào mừng, ${emailInput.value}!`);
+                localStorage.setItem("user_logged_in", emailInput.value);
+                toggleAuth();
+                updateAuthUI();
+            }
+        });
+    }
+
+    // Social media single-sign-on mock hooks
+    window.socialLogin = function(provider) {
+        alert(`Đăng nhập bằng ${provider} thành công!`);
+        localStorage.setItem("user_logged_in", `${provider} User`);
+        toggleAuth();
+        updateAuthUI();
+    };
+
+    window.handleLogout = function() {
+        localStorage.removeItem("user_logged_in");
+        alert("Đã đăng xuất tài khoản.");
+        updateAuthUI();
+    };
+
+    function updateAuthUI() {
+        const loggedInUser = localStorage.getItem("user_logged_in");
+        const authContainer = document.querySelector(".right-nav-auth");
+        if (authContainer) {
+            if (loggedInUser) {
+                authContainer.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="color:#ffc107; font-size:13px; font-weight:bold;">👤 ${loggedInUser}</span>
+                        <button class="login-btn" onclick="handleLogout()" style="background:#444; border:1px solid #555; padding:6px 12px; font-size:11px; cursor:pointer;">ĐĂNG XUẤT</button>
+                    </div>
+                `;
+            } else {
+                authContainer.innerHTML = `
+                    <button class="login-btn" onclick="toggleAuth()">ĐĂNG NHẬP</button>
+                `;
+            }
+        }
+    }
+
+    // Trigger auth checks immediately upon page load
+    updateAuthUI();
+
+    // ==========================================
+    // XỬ LÝ GỬI BÌNH LUẬN KHÁN GIẢ
+    // ==========================================
+    const commentForm = document.getElementById("commentForm");
+    if (commentForm) {
+        commentForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            const commentTextElem = document.getElementById("commentText");
+            if (!commentTextElem || !currentMovieId) return;
+
+            const text = commentTextElem.value.trim();
+            if (!text) return;
+
+            const loggedInUser = localStorage.getItem("user_logged_in");
+            const username = loggedInUser || "Khách ẩn danh";
+            
+            const movieTitle = document.getElementById("detailsTitle").innerText;
+
+            let commentsList = [];
+            const stored = localStorage.getItem("movie_comments");
+            if (stored) {
+                try { commentsList = JSON.parse(stored); } catch(e) { commentsList = []; }
+            } else {
+                commentsList = getInitialComments();
+            }
+
+            const newComment = {
+                id: "CMT-" + Date.now() + "-" + Math.floor(Math.random() * 1000),
+                movieId: currentMovieId,
+                movieTitle: movieTitle,
+                user: username,
+                avatar: username.slice(0, 2).toUpperCase(),
+                text: text,
+                time: "Vừa xong",
+                createdAt: Date.now()
+            };
+
+            commentsList.push(newComment);
+            localStorage.setItem("movie_comments", JSON.stringify(commentsList));
+            
+            commentTextElem.value = "";
+            renderComments(currentMovieId);
+        });
+    }
 });
+
+// ==========================================
+// HÀM HỖ TRỢ XỬ LÝ BÌNH LUẬN (GLOBAL COMMENTS)
+// ==========================================
+function getInitialComments() {
+    return [
+            { id: 1, movieId: 1011989, movieTitle: "Dune: Part Two", user: "Trần Thanh Phương", avatar: "TP", text: "Phim quá đỉnh, kỹ xảo và âm thanh xem rạp phê thực sự. Vietsub của MoviePro chuẩn nhất!", time: "5 phút trước", createdAt: Date.now() - 5 * 60 * 1000 },
+            { id: 2, movieId: 872585, movieTitle: "Oppenheimer", user: "Alex Johnson", avatar: "AJ", text: "A masterpiece by Nolan. The tension buildup is amazing.", time: "25 phút trước", createdAt: Date.now() - 25 * 60 * 1000 },
+            { id: 3, movieId: 157336, movieTitle: "Interstellar", user: "Anonymous (IP: 14.232.89.102)", avatar: "IP", text: "Phim này xem đi xem lại 5 lần rồi vẫn khóc ở đoạn xem tin nhắn video.", time: "1 giờ trước", createdAt: Date.now() - 60 * 60 * 1000 },
+            { id: 4, movieId: 569094, movieTitle: "Spider-Man: Across the Spider-Verse", user: "Nguyễn Văn Hùng", avatar: "VH", text: "Visuals are mindblowing! Can't wait for the next part.", time: "2 giờ trước", createdAt: Date.now() - 2 * 60 * 60 * 1000 }
+    ];
+}
+
+function renderComments(movieId) {
+    let commentsList = [];
+    const stored = localStorage.getItem("movie_comments");
+    if (stored) {
+        try { commentsList = JSON.parse(stored); } catch(e) { commentsList = []; }
+    } else {
+        commentsList = getInitialComments();
+        localStorage.setItem("movie_comments", JSON.stringify(commentsList));
+    }
+
+    const filtered = commentsList
+        .filter(c => c.movieId == movieId)
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    const listContainer = document.getElementById("movieCommentsList");
+    if (!listContainer) return;
+
+    if (filtered.length === 0) {
+        listContainer.innerHTML = "<p style='color: #888; font-size: 12px; padding: 15px 0; text-align: center; width: 100%;'>Chưa có bình luận nào về bộ phim này. Hãy để lại ý kiến đầu tiên của bạn!</p>";
+        return;
+    }
+
+    listContainer.innerHTML = filtered.map(c => `
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid #222; padding: 12px; border-radius: 6px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #ffc107; font-weight: 600; font-size: 13px;">👤 ${c.user}</span>
+                <span style="color: #666; font-size: 11px; font-family: monospace;">${c.time}</span>
+            </div>
+            <p style="color: #ccc; font-size: 13px; margin: 0; line-height: 1.4; word-break: break-word;">${c.text}</p>
+        </div>
+    `).reverse().join('');
+}
 
 // KHỞI CHẠY KHÓI TẢI TRANG TRÊN CÙNG
 window.addEventListener('DOMContentLoaded', () => {

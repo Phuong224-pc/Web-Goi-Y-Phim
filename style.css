@@ -787,35 +787,31 @@ body {
    NÂNG CẤP CHI TIẾT PHIM (OVERLAY)
    ========================================== */
 #movieDetailsPage {
-    position: fixed;
-    top: 0;
-    left: 0;
+    position: relative;
     width: 100%;
-    height: 100%;
     background: #0c0c0c;
-    z-index: 2000;
-    overflow-y: auto;
     display: none; /* Mặc định ẩn */
-    animation: slideUp 0.4s ease-out;
+    animation: fadeIn 0.4s ease-out;
+    padding-bottom: 50px;
 }
 
 #movieDetailsPage.active {
     display: block;
 }
 
-@keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .btn-close-details {
-    position: fixed;
+    position: absolute;
     top: 20px;
     right: 30px;
     font-size: 40px;
     color: #fff;
     cursor: pointer;
-    z-index: 2001;
+    z-index: 10;
     text-shadow: 0 0 10px rgba(0,0,0,0.8);
 }
 

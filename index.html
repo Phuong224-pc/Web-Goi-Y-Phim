@@ -12,143 +12,148 @@
 <body>
 
     <nav class="navbar">
-    <div class="nav-container">
-        <div class="logo">MOVIE<span>PRO</span></div>
+        <div class="nav-container">
+            <div class="logo">MOVIE<span>PRO</span></div>
 
-        <div class="right-header-mobile">
-            <div class="search-box">
-                <input type="text" id="movieInput" placeholder="Tìm tên phim..." autocomplete="off">
-                <button id="searchBtn" onclick="handleSearch()">🔍</button>
-                <div id="searchSuggestions" class="suggestions-list"></div>
-            </div>
-
-            <div class="menu-toggle" id="mobile-menu">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
-        </div>
-
-        <div class="nav-responsive-wrapper" id="nav-wrapper">
-            <ul class="nav-menu">
-                <li class="active"><a href="#" onclick="fetchMovies('trending')">TRANG CHỦ</a></li>
-                <li><a href="#" onclick="fetchMoviesType('movie')">PHIM LẺ</a></li>
-                <li><a href="#" onclick="fetchMoviesType('tv')">PHIM BỘ</a></li>
-
-                <li class="dropdown">
-    <a href="javascript:void(0);" class="dropdown-toggle" onclick="toggleMobileSubMenu(this, event)">THỂ LOẠI <span>▼</span></a>
-    <div class="dropdown-content">
-        <div class="dropdown-grid">
-            <span onclick="fetchByGenre(28)">Hành Động</span>
-            <span onclick="fetchByGenre(12)">Phiêu Lưu</span>
-            <span onclick="fetchByGenre(16)">Hoạt Hình</span>
-            <span onclick="fetchByGenre(35)">Hài Hước</span>
-            <span onclick="fetchByGenre(18)">Chính Kịch</span>
-            <span onclick="fetchByGenre(27)">Kinh Dị</span>
-            <span onclick="fetchByGenre(10749)">Tình Cảm</span>
-            <span onclick="fetchByRegion('VN')">Việt Nam</span>
-        </div>
-    </div>
-</li>
-
-<li class="dropdown">
-    <a href="javascript:void(0);" class="dropdown-toggle" onclick="toggleMobileSubMenu(this, event)">QUỐC GIA <span>▼</span></a>
-    <div class="dropdown-content single-column">
-        <span onclick="fetchByRegion('US')">Âu Mỹ</span>
-        <span onclick="fetchByRegion('KR')">Hàn Quốc</span>
-        <span onclick="fetchByRegion('CN')">Trung Quốc</span>
-        <span onclick="fetchByRegion('JP')">Nhật Bản</span>
-        <span onclick="fetchByRegion('VN')">Việt Nam</span>
-    </div>
-</li>
-
-                <li><a href="#" onclick="fetchMovies('now_playing')">PHIM RẠP</a></li>
-                <li><a href="#" onclick="fetchMovies('top_rated')">TOP PHIM</a></li>
-            </ul>
-
-            <div style="display:flex; align-items:center; gap:12px;">
-                <!-- Desktop-only search (hidden on mobile) -->
-                <div class="search-box desktop-only">
-                    <input type="text" id="movieInputDesktop" placeholder="Tìm tên phim..." autocomplete="off">
-                    <button id="searchBtnDesktop" onclick="handleSearch(null, 'desktop')">🔍</button>
-                    <div id="searchSuggestionsDesktop" class="suggestions-list"></div>
+            <div class="right-header-mobile">
+                <div class="search-box">
+                    <input type="text" id="movieInput" placeholder="Tìm tên phim..." autocomplete="off">
+                    <button id="searchBtn" onclick="handleSearch()">🔍</button>
+                    <div id="searchSuggestions" class="suggestions-list"></div>
                 </div>
 
-                <div class="right-nav-auth">
-                    <button class="login-btn" onclick="toggleAuth()">ĐĂNG NHẬP</button>
+                <div class="menu-toggle" id="mobile-menu">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
                 </div>
             </div>
-        </div> 
-    </div>
-</nav>
 
-    <div class="hero-section">
-        <div class="container main-layout">
-            <div class="left-content">
-                <div class="main-banner" id="heroBanner">
-                    <div class="banner-content">
-                        <span class="trend-label">🔥 ĐANG HOT</span>
-                        <h1 id="heroTitle">Đang cập nhật...</h1>
-                        <div class="banner-meta">
-                            <span class="rating" id="heroRating">⭐ 0.0</span>
-                            <span class="quality">4K Ultra HD</span>
+            <div class="nav-responsive-wrapper" id="nav-wrapper">
+                <ul class="nav-menu">
+                    <li class="active"><a href="#" onclick="fetchMovies('trending')">TRANG CHỦ</a></li>
+                    <li><a href="#" onclick="fetchMoviesType('movie')">PHIM LẺ</a></li>
+                    <li><a href="#" onclick="fetchMoviesType('tv')">PHIM BỘ</a></li>
+
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle"
+                            onclick="toggleMobileSubMenu(this, event)">THỂ LOẠI <span>▼</span></a>
+                        <div class="dropdown-content">
+                            <div class="dropdown-grid">
+                                <span onclick="fetchByGenre(28)">Hành Động</span>
+                                <span onclick="fetchByGenre(12)">Phiêu Lưu</span>
+                                <span onclick="fetchByGenre(16)">Hoạt Hình</span>
+                                <span onclick="fetchByGenre(35)">Hài Hước</span>
+                                <span onclick="fetchByGenre(18)">Chính Kịch</span>
+                                <span onclick="fetchByGenre(27)">Kinh Dị</span>
+                                <span onclick="fetchByGenre(10749)">Tình Cảm</span>
+                                <span onclick="fetchByRegion('VN')">Việt Nam</span>
+                            </div>
                         </div>
-                        <p class="description" id="heroDesc">Vui lòng chờ trong giây lát...</p>
-                        <div class="banner-btns">
-                            <button class="btn-play" id="heroPlayBtn">▶ XEM PHIM</button>
-                            <button class="btn-trailer" id="heroTrailerBtn">TRAILER</button>
+                    </li>
+
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle"
+                            onclick="toggleMobileSubMenu(this, event)">QUỐC GIA <span>▼</span></a>
+                        <div class="dropdown-content single-column">
+                            <span onclick="fetchByRegion('US')">Âu Mỹ</span>
+                            <span onclick="fetchByRegion('KR')">Hàn Quốc</span>
+                            <span onclick="fetchByRegion('CN')">Trung Quốc</span>
+                            <span onclick="fetchByRegion('JP')">Nhật Bản</span>
+                            <span onclick="fetchByRegion('VN')">Việt Nam</span>
                         </div>
+                    </li>
+
+                    <li><a href="#" onclick="fetchMovies('now_playing')">PHIM RẠP</a></li>
+                    <li><a href="#" onclick="fetchMovies('top_rated')">TOP PHIM</a></li>
+                </ul>
+
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <!-- Desktop-only search (hidden on mobile) -->
+                    <div class="search-box desktop-only">
+                        <input type="text" id="movieInputDesktop" placeholder="Tìm tên phim..." autocomplete="off">
+                        <button id="searchBtnDesktop" onclick="handleSearch(null, 'desktop')">🔍</button>
+                        <div id="searchSuggestionsDesktop" class="suggestions-list"></div>
                     </div>
 
-                    <button class="slider-btn prev" onclick="changeBanner(-1)">&#10094;</button>
-                    <button class="slider-btn next" onclick="changeBanner(1)">&#10095;</button>
-                    <div class="slider-dots" id="bannerDots"></div>
-                </div>
-
-                <div class="recommend-section" style="margin-top: 30px;">
-                    <div class="recommend-header">
-                        <div class="rec-title">ĐỀ CỬ <span>›</span></div>
-                        <div class="rec-tabs">
-                            <span class="tab active" onclick="fetchRecommended('today', this)">Xem nhiều hôm nay</span>
-                            <span class="tab" onclick="fetchRecommended('season', this)">Xem nhiều trong mùa</span>
-                            <span class="tab" onclick="fetchRecommended('favorite', this)">Yêu Thích</span>
-                            <span class="tab" onclick="fetchRecommended('month', this)">Tháng</span>
-                        </div>
+                    <div class="right-nav-auth">
+                        <button class="login-btn" onclick="toggleAuth()">ĐĂNG NHẬP</button>
                     </div>
-                    <div id="recommendGrid" class="movie-grid"></div>
                 </div>
             </div>
+        </div>
+    </nav>
 
-            <aside class="home-sidebar">
-                <div class="side-widget">
-                    <h3 class="widget-title">PHIM HOT TRONG TUẦN</h3>
-                    <div id="hotWeekly" class="side-list"></div>
+    <main id="mainPageContent">
+        <div class="hero-section">
+            <div class="container main-layout">
+                <div class="left-content">
+                    <div class="main-banner" id="heroBanner">
+                        <div class="banner-content">
+                            <span class="trend-label">🔥 ĐANG HOT</span>
+                            <h1 id="heroTitle">Đang cập nhật...</h1>
+                            <div class="banner-meta">
+                                <span class="rating" id="heroRating">⭐ 0.0</span>
+                                <span class="quality">4K Ultra HD</span>
+                            </div>
+                            <p class="description" id="heroDesc">Vui lòng chờ trong giây lát...</p>
+                            <div class="banner-btns">
+                                <button class="btn-play" id="heroPlayBtn">▶ XEM PHIM</button>
+                                <button class="btn-trailer" id="heroTrailerBtn">TRAILER</button>
+                            </div>
+                        </div>
+
+                        <button class="slider-btn prev" onclick="changeBanner(-1)">&#10094;</button>
+                        <button class="slider-btn next" onclick="changeBanner(1)">&#10095;</button>
+                        <div class="slider-dots" id="bannerDots"></div>
+                    </div>
+
+                    <div class="recommend-section" style="margin-top: 30px;">
+                        <div class="recommend-header">
+                            <div class="rec-title">ĐỀ CỬ <span>›</span></div>
+                            <div class="rec-tabs">
+                                <span class="tab active" onclick="fetchRecommended('today', this)">Xem nhiều hôm
+                                    nay</span>
+                                <span class="tab" onclick="fetchRecommended('season', this)">Xem nhiều trong mùa</span>
+                                <span class="tab" onclick="fetchRecommended('favorite', this)">Yêu Thích</span>
+                                <span class="tab" onclick="fetchRecommended('month', this)">Tháng</span>
+                            </div>
+                        </div>
+                        <div id="recommendGrid" class="movie-grid"></div>
+                    </div>
                 </div>
-                <div class="side-widget">
-                    <h3 class="widget-title">MỚI CẬP NHẬT</h3>
-                    <ul id="newUpdates" class="text-list"></ul>
-                </div>
-            </aside>
-        </div>
-    </div>
 
-    <div class="container" style="margin-top: 40px;">
-        <div class="recommend-header">
-            <div class="rec-title" style="background: #b22222;">SẮP CHIẾU <span>›</span></div>
+                <aside class="home-sidebar">
+                    <div class="side-widget">
+                        <h3 class="widget-title">PHIM HOT TRONG TUẦN</h3>
+                        <div id="hotWeekly" class="side-list"></div>
+                    </div>
+                    <div class="side-widget">
+                        <h3 class="widget-title">MỚI CẬP NHẬT</h3>
+                        <ul id="newUpdates" class="text-list"></ul>
+                    </div>
+                </aside>
+            </div>
         </div>
-        <div id="upcomingGrid" class="movie-grid upcoming-style">
-            <div class="loading-text" style="color: #888; padding: 20px;">Đang tải danh sách phim sắp chiếu...</div>
-        </div>
-    </div>
 
-    <hr style="border: 0; border-top: 1px solid #222; margin: 40px 0;">
-
-    <div class="container">
-        <div class="section-header">
-            <h2 id="categoryTitle">🎬 PHIM MỚI CẬP NHẬT</h2>
+        <div class="container" style="margin-top: 40px;">
+            <div class="recommend-header">
+                <div class="rec-title" style="background: #b22222;">SẮP CHIẾU <span>›</span></div>
+            </div>
+            <div id="upcomingGrid" class="movie-grid upcoming-style">
+                <div class="loading-text" style="color: #888; padding: 20px;">Đang tải danh sách phim sắp chiếu...</div>
+            </div>
         </div>
-        <div id="movieList" class="movie-grid"></div>
-    </div>
+
+        <hr style="border: 0; border-top: 1px solid #222; margin: 40px 0;">
+
+        <div class="container">
+            <div class="section-header">
+                <h2 id="categoryTitle">🎬 PHIM MỚI CẬP NHẬT</h2>
+            </div>
+            <div id="movieList" class="movie-grid"></div>
+        </div>
+    </main>
 
     <div id="movieDetailsPage">
         <span class="btn-close-details" onclick="closeDetails()">&times;</span>
@@ -171,6 +176,18 @@
                     <h3>DIỄN VIÊN CHÍNH</h3>
                     <div id="detailsCast" class="cast-grid"></div>
                 </div>
+                
+                <!-- Audience Comments Section -->
+                <div class="comments-section" style="margin-top: 35px; border-top: 1px solid #222; padding-top: 25px;">
+                    <h3 style="font-size: 16px; color: #fff; border-left: 4px solid #b22222; padding-left: 8px; margin-bottom: 15px;">BÌNH LUẬN KHÁN GIẢ</h3>
+                    <form id="commentForm" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                        <textarea id="commentText" placeholder="Chia sẻ suy nghĩ của bạn về bộ phim này..." style="width: 100%; min-height: 80px; padding: 12px; background: #111; border: 1px solid #333; color: #fff; border-radius: 6px; font-size: 13px; font-family: inherit; outline: none; resize: vertical; box-sizing: border-box;" required></textarea>
+                        <button type="submit" class="btn-submit" style="align-self: flex-end; padding: 8px 20px; font-size: 12px; border-radius: 4px; font-weight: 600;">GỬI BÌNH LUẬN</button>
+                    </form>
+                    <div id="movieCommentsList" style="display: flex; flex-direction: column; gap: 12px; max-height: 250px; overflow-y: auto; padding-right: 5px;">
+                        <!-- Dynamic list of comments will render here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -184,7 +201,8 @@
                     <button class="btn-server" onclick="switchServer(2)">Server 2 (Vidsrc.to)</button>
                     <button class="btn-server" onclick="switchServer(3)">Server 3 (2Embed)</button>
                 </div>
-                <span class="close-player" onclick="closePlayer()" style="font-size: 20px; cursor: pointer;">&times; ĐÓNG</span>
+                <span class="close-player" onclick="closePlayer()" style="font-size: 20px; cursor: pointer;">&times;
+                    ĐÓNG</span>
             </div>
             <iframe id="moviePlayer" src="" allowfullscreen></iframe>
         </div>
@@ -209,65 +227,75 @@
                 </div>
                 <button type="submit" class="btn-submit">XÁC NHẬN</button>
             </form>
-            <div class="social-divider" style="text-align: center; margin: 20px 0; position: relative; border-bottom: 1px solid #333; line-height: 0.1em;">
-                <span style="background: #1a1a1a; padding: 0 10px; color: #888; font-size: 12px;">Hoặc đăng nhập bằng</span>
+            <div class="social-divider"
+                style="text-align: center; margin: 20px 0; position: relative; border-bottom: 1px solid #333; line-height: 0.1em;">
+                <span style="background: #1a1a1a; padding: 0 10px; color: #888; font-size: 12px;">Hoặc đăng nhập
+                    bằng</span>
             </div>
             <div class="social-btns" style="display: flex; gap: 10px;">
-                <button class="btn-social" onclick="socialLogin('Google')" style="flex:1; display: flex; align-items:center; justify-content:center; gap:8px; padding:10px; border-radius:5px; border:1px solid #444; background:none; color:#fff; cursor:pointer;">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg" style="width:15px;"> Google
+                <button class="btn-social" onclick="socialLogin('Google')"
+                    style="flex:1; display: flex; align-items:center; justify-content:center; gap:8px; padding:10px; border-radius:5px; border:1px solid #444; background:none; color:#fff; cursor:pointer;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg" style="width:15px;">
+                    Google
                 </button>
-                <button class="btn-social" onclick="socialLogin('Facebook')" style="flex:1; display: flex; align-items:center; justify-content:center; gap:8px; padding:10px; border-radius:5px; border:1px solid #444; background:none; color:#fff; cursor:pointer;">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" style="width:15px;"> Facebook
+                <button class="btn-social" onclick="socialLogin('Facebook')"
+                    style="flex:1; display: flex; align-items:center; justify-content:center; gap:8px; padding:10px; border-radius:5px; border:1px solid #444; background:none; color:#fff; cursor:pointer;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg"
+                        style="width:15px;"> Facebook
                 </button>
             </div>
+            <button onclick="window.location.href='admin/index.html'"
+                style="width:100%; margin-top: 14px; padding: 11px 14px; border-radius: 5px; border: 1px solid #8bc34a; background: rgba(139, 195, 74, 0.12); color: #8bc34a; font-weight: 700; cursor: pointer;">
+                ADMIN NHANH
+            </button>
         </div>
     </div>
+
+    <footer class="main-footer">
+        <div class="container footer-content">
+            <div class="footer-column">
+                <div class="logo">MOVIE<span>PRO</span></div>
+                <p class="footer-desc">
+                    Trang xem phim trực tuyến chất lượng cao, cập nhật liên tục các bộ phim mới nhất,
+                    vietsub nhanh nhất với trải nghiệm người dùng tuyệt vời.
+                </p>
+            </div>
+            <div class="footer-column">
+                <h4>DANH MỤC</h4>
+                <ul>
+                    <li><a href="#">Phim Lẻ</a></li>
+                    <li><a href="#">Phim Bộ</a></li>
+                    <li><a href="#">Phim Chiếu Rạp</a></li>
+                    <li><a href="#">Hoạt Hình</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>HỖ TRỢ</h4>
+                <ul>
+                    <li><a href="#">Điều khoản sử dụng</a></li>
+                    <li><a href="#">Chính sách bảo mật</a></li>
+                    <li><a href="#">Khiếu nại bản quyền</a></li>
+                    <li><a href="#">Liên hệ quảng cáo</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>KẾT NỐI</h4>
+                <div class="social-links">
+                    <a href="#" title="Facebook">FB</a>
+                    <a href="#" title="YouTube">YT</a>
+                    <a href="#" title="TikTok">TK</a>
+                </div>
+                <p style="margin-top: 15px; font-size: 12px; color: #888;">Email: support@moviepro.vn</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 MoviePro - Toàn bộ bản quyền thuộc về Trương Trần Thanh Phương.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>
-
-<footer class="main-footer">
-    <div class="container footer-content">
-        <div class="footer-column">
-            <div class="logo">MOVIE<span>PRO</span></div>
-            <p class="footer-desc">
-                Trang xem phim trực tuyến chất lượng cao, cập nhật liên tục các bộ phim mới nhất, 
-                vietsub nhanh nhất với trải nghiệm người dùng tuyệt vời.
-            </p>
-        </div>
-        <div class="footer-column">
-            <h4>DANH MỤC</h4>
-            <ul>
-                <li><a href="#">Phim Lẻ</a></li>
-                <li><a href="#">Phim Bộ</a></li>
-                <li><a href="#">Phim Chiếu Rạp</a></li>
-                <li><a href="#">Hoạt Hình</a></li>
-            </ul>
-        </div>
-        <div class="footer-column">
-            <h4>HỖ TRỢ</h4>
-            <ul>
-                <li><a href="#">Điều khoản sử dụng</a></li>
-                <li><a href="#">Chính sách bảo mật</a></li>
-                <li><a href="#">Khiếu nại bản quyền</a></li>
-                <li><a href="#">Liên hệ quảng cáo</a></li>
-            </ul>
-        </div>
-        <div class="footer-column">
-            <h4>KẾT NỐI</h4>
-            <div class="social-links">
-                <a href="#" title="Facebook">FB</a>
-                <a href="#" title="YouTube">YT</a>
-                <a href="#" title="TikTok">TK</a>
-            </div>
-            <p style="margin-top: 15px; font-size: 12px; color: #888;">Email: support@moviepro.vn</p>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        <div class="container">
-            <p>&copy; 2026 MoviePro - Toàn bộ bản quyền thuộc về Trương Trần Thanh Phương.</p>
-        </div>
-    </div>
-</footer>
 
 </html>
